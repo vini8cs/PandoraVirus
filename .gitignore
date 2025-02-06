@@ -1,0 +1,4 @@
+tower_defaults.config
+.nextflow
+.nextflow.log*
+work/

@@ -1,0 +1,4 @@
+tower {
+    enabled = true
+    accessToken = "paste_your_accessToken_here"
+}
