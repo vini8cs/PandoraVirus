@@ -5,7 +5,7 @@ include { FASTP_CREATEADAPTERSFILE } from './modules/local/fastp/createadaptersf
 include { FASTP } from './modules/nf-core/fastp/main'
 include { PYTAXONKIT_GETAXONOMY } from './modules/local/pytaxonkit/getaxonomy/main'
 include { NCBIDATASETS_DOWNLOAD } from './modules/local/ncbidatasets/download/main'
-
+include { readFile } from './modules/local/readfile/main'
 
 workflow {
     samples_ch = Channel
@@ -43,10 +43,11 @@ workflow {
     )
 
     lineage_info_ch = PYTAXONKIT_GETAXONOMY(complete_channel.map{
-        meta, _file -> tuple(meta, meta.taxon)})
-        .map {_meta, file -> file}
-        .splitCsv(header:false)
-        .view()
+        meta, _file -> tuple(meta, meta.taxon)}).view()
+
+    lineage = readFile(lineage_info_ch)
+
+    lineage.species
 
     // NCBIDATASETS_DOWNLOAD(
         

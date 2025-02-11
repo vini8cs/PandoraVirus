@@ -17,6 +17,10 @@ process PYTAXONKIT_GETAXONOMY {
         """
     stub:
         """
-        touch lineage_info.txt
+        SPECIES="Escherichia coli"
+        GENUS="Escherichia"
+        FAMILY="Enterobacteriaceae"
+        ORDER="Enterobacterales"
+        echo -e "\$SPECIES\n\$GENUS\n\$FAMILY\n\$ORDER" > lineage_info.txt
         """
 }
