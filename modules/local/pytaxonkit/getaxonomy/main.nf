@@ -10,7 +10,7 @@ process PYTAXONKIT_GETAXONOMY {
     input:
         tuple val(meta), val(taxon)
     output:
-        tuple val(meta), path("lineage_info.txt")
+        tuple val(meta), stdout
     script:
         """
         TAXONKIT_DATABASE=$params.TAXONKIT_DATABASE extract_lineage.py -t ${taxon} 
@@ -21,6 +21,6 @@ process PYTAXONKIT_GETAXONOMY {
         GENUS="Escherichia"
         FAMILY="Enterobacteriaceae"
         ORDER="Enterobacterales"
-        echo -e "\$SPECIES\n\$GENUS\n\$FAMILY\n\$ORDER" > lineage_info.txt
+        echo -e "\$SPECIES\n\$GENUS\n\$FAMILY\n\$ORDER"
         """
 }

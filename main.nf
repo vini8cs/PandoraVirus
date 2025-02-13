@@ -43,11 +43,11 @@ workflow {
     )
 
     lineage_info_ch = PYTAXONKIT_GETAXONOMY(complete_channel.map{
-        meta, _file -> tuple(meta, meta.taxon)}).view()
+        meta, _file -> tuple(meta, meta.taxon)})
 
     lineage = readFile(lineage_info_ch)
 
-    lineage.species
+    lineage.genus.view()
 
     // NCBIDATASETS_DOWNLOAD(
         

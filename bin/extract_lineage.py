@@ -32,6 +32,8 @@ def extract_lineage(taxid: str) -> pd.DataFrame:
         formatstr="{k};{K};{p};{c};{o};{f};{g};{s}",
         data_dir=TAXONKIT_DATABASE,
     )
+    if lineage["TaxID"] is None:
+        print("\n\n\n")
     lineage[LINEAGE_COLUMNS] = lineage["Lineage"].str.split(";", expand=True)
     return lineage[["order", "family", "genus", "species"]]
 
@@ -40,10 +42,8 @@ def main():
     options = get_options()
     taxid = extract_taxid(options.taxon)
     lineage_df = extract_lineage(taxid)
-    output = lineage_df.melt(
-        value_vars=["species", "genus", "family", "order"], var_name="Category", value_name="Name"
-    )["Name"]
-    output.to_csv(options.output, sep="\t", index=False, header=False)
+    output = lineage_df.melt(value_vars=["species", "genus", "family", "order"], var_name="Category", value_name="Name")
+    print(f"{output['Name'].iloc[0]}\n{output['Name'].iloc[1]}\n{output['Name'].iloc[2]}\n{output['Name'].iloc[3]}")
 
 
 if __name__ == "__main__":
