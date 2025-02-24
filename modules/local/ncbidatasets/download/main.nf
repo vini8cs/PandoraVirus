@@ -1,15 +1,14 @@
 process NCBIDATASETS_DOWNLOAD {
     tag "$meta.id"
     debug params.debug
-
-    conda "conda-forge::ncbi-datasets-cli=15.12.0"
-    container "docker.io/biocontainers/ncbi-datasets-cli:15.12.0_cv23.1.0-4"
+    container "docker.io/biocontainers/ncbi-datasets-cli:16.22.1_cv1"
 
     input:
-    tuple val(meta), path(taxon)
+    tuple val(meta), val(taxon)
+    val(dna_type)
 
     output:
-    tuple val(meta), path("*.gz"), emit: summary
+    tuple val(meta), path("*.fna"), emit: fna
     path "versions.yml"            , emit: versions
 
     when:
@@ -17,13 +16,20 @@ process NCBIDATASETS_DOWNLOAD {
 
     script:
     def args = task.ext.args ?: ''
+    def dna = dna_type == 'cds' ? '--include cds' : ''
     """
     datasets \\
         download \\
         genome \\
         taxon \\
-        ${taxon} \\
-        ${args}
+        ${args} \\
+        '${taxon}' \\
+        ${dna} \\
+        
+    
+    unzip ncbi_dataset.zip
+    
+    find . -name "*.fna" -exec mv {} . \\;
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -32,10 +38,7 @@ process NCBIDATASETS_DOWNLOAD {
     """
     stub:
     """
-    touch genome.fna.gz
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        ncbi-datasets-cli: \$(datasets --version | sed 's/^.*datasets version: //')
-    END_VERSIONS
+    touch genome.fna
+    touch versions.yml
     """
 }

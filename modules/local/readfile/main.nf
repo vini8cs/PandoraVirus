@@ -10,15 +10,15 @@ process readFile {
         tuple val(meta), val(family), emit: family
         tuple val(meta), val(order), emit: order
     exec:
-        def lines = lineage_text.trim().split('\n')
-        species = lines[0]
-        genus = lines[1]
-        family = lines[2]
-        order = lines[3]
+        def lines = lineage_text.split('\n')
+        species = lines[0].trim()
+        genus = lines[1].trim()
+        family = lines[2].trim()
+        order = lines[3].trim()
     stub:
-        def lines = lineage_text.trim().split('\n')
-        species = lines[0]
-        genus = lines[1]
-        family = lines[2]
-        order = lines[3]
+        def lines = lineage_text.split('\n')
+        species = lines[0].trim()
+        genus = lines[1].trim()
+        family = lines[2].trim()
+        order = lines[3].trim()
 }

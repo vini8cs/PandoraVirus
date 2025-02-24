@@ -1,0 +1,16 @@
+{
+	"assembly_tool": ["megahit","rnaspades"],
+	"outdir": "/media/vini8cs/HD_vinicius1/benchmark/results",
+	"host_dna_type" : "cds",
+	"host_fasta" : "",
+	"samples": [
+	  {  
+		"sample_accession": "SRR9705234",
+        "sample_host" : "'Apis mellifera'"
+	  },
+	  {  
+		"sample_accession": "SRR32267259",
+        "sample_host": "'Homo sapiens'"
+	  }
+	]
+  }
