@@ -9,9 +9,16 @@ include { readFile } from './modules/local/readfile/main'
 include { HISAT2_BUILD } from './modules/nf-core/hisat2/build/main'
 include { HISAT2_ALIGN } from './modules/nf-core/hisat2/align/main'
 include { MEGAHIT } from './modules/nf-core/megahit/main'
+include { TRINITY } from './modules/nf-core/trinity/main' 
+include { CAT_FASTA } from './modules/local/cat/fasta/main'
+include { CDHIT_CDHITEST } from './modules/nf-core/cdhit/cdhitest/main'
+include { SEQTK_SEQ } from './modules/nf-core/seqtk/seq/main'
+include { QUAST } from './modules/nf-core/quast/main' 
 include { 
     SPADES;
     SPADES as RNA_SPADES ;
+    SPADES as META_SPADES ;
+    SPADES as CORONA_SPADES ;
 } from './modules/nf-core/spades/main'
 
 workflow {
@@ -64,7 +71,7 @@ workflow {
         NCBIDATASETS_DOWNLOAD(
             lineages_filtered_ch, Channel.value(params.host_dna_type)
         )
-        fna = NCBIDATASETS_DOWNLOAD.out.fna.view()
+        fna = NCBIDATASETS_DOWNLOAD.out.fna
     
     } else {
         host_fna = Channel.fromPath(params.host_fasta)
@@ -77,16 +84,61 @@ workflow {
     if ("megahit" in params.assembly_tool) {
         MEGAHIT(mapped_fastq.filter {meta, _file -> !meta.single_end})
         contigs_megahit = MEGAHIT.out.contigs
+    } else {
+        contigs_megahit = Channel.empty()
     }
 
     if ("spades" in params.assembly_tool) {
         SPADES(mapped_fastq.map{meta, file -> tuple(meta, file, [], [])}, [], [])
-    } 
+        spades_contigs = SPADES.out.contigs
+    } else {
+        spades_contigs = Channel.empty()
+    }
     
     if ("rnaspades" in params.assembly_tool) {
         RNA_SPADES(mapped_fastq.map{meta, file -> tuple(meta, file,[], [])}, [], [])
-        rna_spades_contigs = RNA_SPADES.out.contigs.view()
+        rna_spades_contigs = RNA_SPADES.out.contigs
+    } else {
+        rna_spades_contigs = Channel.empty()
     }
+
+    if ("trinity" in params.assembly_tool) {
+        TRINITY(mapped_fastq)
+        trinity_contigs = TRINITY.out.transcript_fasta
+    } else {
+        trinity_contigs = Channel.empty()
+    }
+
+    if ("metaspades" in params.assembly_tool) {
+        META_SPADES(mapped_fastq.map{meta, file -> tuple(meta, file, [], [])}, [], [])
+        metaspades_contigs = SPADES.out.contigs
+    } else {
+        metaspades_contigs = Channel.empty()
+    }
+
+    if ("coronaspades" in params.assembly_tool) {
+        CORONA_SPADES(mapped_fastq.map{meta, file -> tuple(meta, file, [], [])}, [], [])
+        coronaspades_contigs = SPADES.out.contigs
+    } else {
+        coronaspades_contigs = Channel.empty()
+    }
+
+    all_contigs_ch = contigs_megahit
+        .concat(spades_contigs)
+        .concat(rna_spades_contigs)
+        .concat(trinity_contigs)
+        .concat(metaspades_contigs)
+        .concat(coronaspades_contigs)
+        .groupTuple()
+
+    //talvez tenha que descompactar antes
+
+    merged_contigs_ch = CAT_FASTA(all_contigs_ch)
+    clustered_fasta_ch = CDHIT_CDHITEST(merged_contigs_ch.contigs)
+    filtered_merged_fasta_ch = SEQTK_SEQ(clustered_fasta_ch.fasta)
     
+    // Arrumar problema de colisão de arquivos de input
+    QUAST(all_contigs_ch, [[],[]], [[], []] )
+    QUAST.out.tsv.view()
 }
     

@@ -1,8 +1,9 @@
 {
-	"assembly_tool": ["megahit","rnaspades"],
+	"assembly_tool": ["megahit","rnaspades", "trinity", "spades"],
 	"outdir": "/media/vini8cs/HD_vinicius1/benchmark/results",
 	"host_dna_type" : "cds",
 	"host_fasta" : "",
+	"minsize" : 500,
 	"samples": [
 	  {  
 		"sample_accession": "SRR9705234",
