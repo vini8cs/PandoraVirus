@@ -13,7 +13,8 @@ include { TRINITY } from './modules/nf-core/trinity/main'
 include { CAT_FASTA } from './modules/local/cat/fasta/main'
 include { CDHIT_CDHITEST } from './modules/nf-core/cdhit/cdhitest/main'
 include { SEQTK_SEQ } from './modules/nf-core/seqtk/seq/main'
-include { QUAST } from './modules/nf-core/quast/main' 
+include { QUAST } from './modules/nf-core/quast/main'
+include { GENOMAD_ENDTOEND } from './modules/nf-core/genomad/endtoend/main' 
 include { 
     SPADES;
     SPADES as RNA_SPADES ;
@@ -129,16 +130,24 @@ workflow {
         .concat(trinity_contigs)
         .concat(metaspades_contigs)
         .concat(coronaspades_contigs)
-        .groupTuple()
-
+        
     //talvez tenha que descompactar antes
 
-    merged_contigs_ch = CAT_FASTA(all_contigs_ch)
+    merged_contigs_ch = CAT_FASTA(all_contigs_ch.groupTuple())
     clustered_fasta_ch = CDHIT_CDHITEST(merged_contigs_ch.contigs)
     filtered_merged_fasta_ch = SEQTK_SEQ(clustered_fasta_ch.fasta)
     
-    // Arrumar problema de colisão de arquivos de input
-    QUAST(all_contigs_ch, [[],[]], [[], []] )
-    QUAST.out.tsv.view()
+    QUAST(all_contigs_ch
+        .concat(filtered_merged_fasta_ch.fastx)
+        .groupTuple(),
+        [[],[]], [[], []] )
+    
+    QUAST.out.tsv
+
+    GENOMAD_ENDTOEND(filtered_merged_fasta_ch.fastx, params.GENOMAD_DATABASE)
+
+    GENOMAD_ENDTOEND.out.virus_genes.view()
+    GENOMAD_ENDTOEND.out.virus_proteins.view()
+    GENOMAD_ENDTOEND.out.virus_fasta.view()
 }
     
