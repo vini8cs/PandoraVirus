@@ -163,28 +163,30 @@ workflow {
             tuple([id: "db"], file)}
     } else {
         rvdb_db = file(params.RVDB_LINK)
-        // XZ_DECOMPRESS(rvdb_db)
-        // processed_rvdb_ch = PROCESSRVDB(rvdb_db)
-        // taxdump_ch = file("https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz")
-        // tar_ch = UNTAR(taxdump_ch.map{file -> tuple([id: "taxdump"], file)})
-        // nodes_ch = tar_ch.untar.filter{_meta, file -> file == "nodes.dmp"}
-        // names_ch = tar_ch.untar.filter{_meta, file -> file == "names.dmp"}
+        rvdb_db_ch = Channel.fromPath(rvdb_db).map {file -> tuple([id: "rvdb_db"], file)}
+        processed_rvdb_ch = XZ_DECOMPRESS(rvdb_db_ch)
+        
+        taxdump_file = file("https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz")
+        taxdump_ch = Channel.fromPath(taxdump_file).map {file -> tuple([id: "taxdump"], file)}
+        tar_ch = UNTAR(taxdump_ch)
+        nodes_ch = tar_ch.untar.filter{_meta, file -> file == "nodes.dmp"}
+        names_ch = tar_ch.untar.filter{_meta, file -> file == "names.dmp"}
 
-        // prot_accession2taxid_ch = file("https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/prot.accession2taxid.gz").map{file -> tuple([id: "prot_accession2taxid"], file)}
+        prot_accession2taxid_file = file("https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/prot.accession2taxid.gz")
+        prot_accession2taxid_ch = Channel.fromPath(prot_accession2taxid_file).map{file -> tuple([id: "prot_accession2taxid"], file)}
 
-        // DIAMOND_MAKEDB(
-        //     processed_rvdb_ch,
-        //     nodes_ch,
-        //     names_ch,
-        //     prot_accession2taxid_ch
-        // )
+        DIAMOND_MAKEDB(
+            processed_rvdb_ch.file,
+            nodes_ch,
+            names_ch,
+            prot_accession2taxid_ch
+        )
 
-        // DIAMOND_MAKEDB.out.dmnd.view()
+        diamond_db_ch = DIAMOND_MAKEDB.out.db
 
     }
     
-    // DIAMOND_BLASTX(aligned_virus_fasta.viral_transcripts, diamond_db_ch, "txt", "qseqid qlen sseqid slen stitle pident qcovhsp evalue bitscore")
-
-    // DIAMOND_BLASTX.out.txt
+    DIAMOND_BLASTX(aligned_virus_fasta.viral_transcripts, diamond_db_ch, "txt", "qseqid qlen sseqid slen stitle pident qcovhsp evalue bitscore")
+    DIAMOND_BLASTX.out.txt
 }
     
