@@ -14,7 +14,13 @@ include { CAT_FASTA } from './modules/local/cat/fasta/main'
 include { CDHIT_CDHITEST } from './modules/nf-core/cdhit/cdhitest/main'
 include { SEQTK_SEQ } from './modules/nf-core/seqtk/seq/main'
 include { QUAST } from './modules/nf-core/quast/main'
-include { GENOMAD_ENDTOEND } from './modules/nf-core/genomad/endtoend/main' 
+include { GENOMAD_ENDTOEND } from './modules/nf-core/genomad/endtoend/main'
+include { CAP3 } from './modules/local/cap3/main'
+include { DIAMOND_BLASTX } from './modules/nf-core/diamond/blastx/main' 
+include { XZ_DECOMPRESS } from './modules/nf-core/xz/decompress/main'
+include { PROCESSRVDB } from './modules/local/processrvdb/main'
+include { UNTAR } from './modules/nf-core/untar/main'
+include { DIAMOND_MAKEDB } from './modules/nf-core/diamond/makedb/main'
 include { 
     SPADES;
     SPADES as RNA_SPADES ;
@@ -146,8 +152,39 @@ workflow {
 
     GENOMAD_ENDTOEND(filtered_merged_fasta_ch.fastx, params.GENOMAD_DATABASE)
 
-    GENOMAD_ENDTOEND.out.virus_genes.view()
-    GENOMAD_ENDTOEND.out.virus_proteins.view()
-    GENOMAD_ENDTOEND.out.virus_fasta.view()
+    GENOMAD_ENDTOEND.out.virus_genes
+    GENOMAD_ENDTOEND.out.virus_proteins
+
+    aligned_virus_fasta = CAP3(GENOMAD_ENDTOEND.out.virus_fasta)
+    
+    DiamondDatabasefileExists = file(params.DIAMOND_DATABASE, checkIfExists: false)
+    if (DiamondDatabasefileExists.exists()) {
+        diamond_db_ch = Channel.fromPath(params.DIAMOND_DATABASE).map {file ->
+            tuple([id: "db"], file)}
+    } else {
+        rvdb_db = file(params.RVDB_LINK)
+        // XZ_DECOMPRESS(rvdb_db)
+        // processed_rvdb_ch = PROCESSRVDB(rvdb_db)
+        // taxdump_ch = file("https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz")
+        // tar_ch = UNTAR(taxdump_ch.map{file -> tuple([id: "taxdump"], file)})
+        // nodes_ch = tar_ch.untar.filter{_meta, file -> file == "nodes.dmp"}
+        // names_ch = tar_ch.untar.filter{_meta, file -> file == "names.dmp"}
+
+        // prot_accession2taxid_ch = file("https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/prot.accession2taxid.gz").map{file -> tuple([id: "prot_accession2taxid"], file)}
+
+        // DIAMOND_MAKEDB(
+        //     processed_rvdb_ch,
+        //     nodes_ch,
+        //     names_ch,
+        //     prot_accession2taxid_ch
+        // )
+
+        // DIAMOND_MAKEDB.out.dmnd.view()
+
+    }
+    
+    // DIAMOND_BLASTX(aligned_virus_fasta.viral_transcripts, diamond_db_ch, "txt", "qseqid qlen sseqid slen stitle pident qcovhsp evalue bitscore")
+
+    // DIAMOND_BLASTX.out.txt
 }
     
