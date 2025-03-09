@@ -21,6 +21,7 @@ include { XZ_DECOMPRESS } from './modules/nf-core/xz/decompress/main'
 include { PROCESSRVDB } from './modules/local/processrvdb/main'
 include { UNTAR } from './modules/nf-core/untar/main'
 include { DIAMOND_MAKEDB } from './modules/nf-core/diamond/makedb/main'
+include { PYTAXONKIT_LCA } from './modules/local/pytaxonkit/lca/main'
 include { 
     SPADES;
     SPADES as RNA_SPADES ;
@@ -187,6 +188,7 @@ workflow {
     }
     
     DIAMOND_BLASTX(aligned_virus_fasta.viral_transcripts, diamond_db_ch, "txt", "qseqid qlen sseqid slen stitle pident qcovhsp evalue bitscore")
-    DIAMOND_BLASTX.out.txt
+    
+    PYTAXONKIT_LCA(DIAMOND_BLASTX.out.txt)
 }
     

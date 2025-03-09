@@ -1,4 +1,4 @@
-# docker build -t vini8cs/pytaxonkit:1.1 .
+# docker build -t vini8cs/pytaxonkit:1.2 .
 FROM mambaorg/micromamba:ubuntu22.04
 
 USER root
@@ -10,7 +10,7 @@ ENV MAMBA_DOCKERFILE_ACTIVATE=1 \
 RUN micromamba clean --all \
     && micromamba install -y -n base pip=25.0 \
     && micromamba install -y -n base bioconda::pytaxonkit=0.8 \
-    && pip install pandas==2.2.3 \
+    && pip install pandas==2.2.3 pandarallel==1.6.5 \
     && micromamba env export --name base > environment.lock \
     && echo ">> CONDA_LOCK_START" \
     && cat environment.lock \
