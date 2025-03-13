@@ -1,6 +1,5 @@
 tower_defaults.config
-.nextflow
-.nextflow.log*
+.nextflow*
 perf.config
 params.config
 work/
