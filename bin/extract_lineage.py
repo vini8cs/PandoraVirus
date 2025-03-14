@@ -35,7 +35,7 @@ def extract_lineage(taxid: str) -> pd.DataFrame:
     if pd.isna(lineage["TaxID"].iloc[0]):
         return None
 
-    lineage[LINEAGE_COLUMNS] = lineage["Lineage"].str.split(";", expand=True)
+    lineage[LINEAGE_COLUMNS] = lineage["LineageTaxIDs"].str.split(";", expand=True)
     return lineage[["order", "family", "genus", "species"]]
 
 
@@ -46,7 +46,7 @@ def main():
         taxid = extract_taxid(taxid)
     lineage_df = extract_lineage(taxid)
     if lineage_df is None:
-        print("Homo sapiens\nHomo\nHominidae\nPrimates\n")
+        print("9606\n9605\n9604\n9443\n")
         return
 
     output = lineage_df.melt(value_vars=["species", "genus", "family", "order"], var_name="Category", value_name="Name")

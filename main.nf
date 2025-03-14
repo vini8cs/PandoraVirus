@@ -21,6 +21,8 @@ include { XZ_DECOMPRESS } from './modules/nf-core/xz/decompress/main'
 include { PROCESSRVDB } from './modules/local/processrvdb/main'
 include { UNTAR } from './modules/nf-core/untar/main'
 include { DIAMOND_MAKEDB } from './modules/nf-core/diamond/makedb/main'
+include { NCBIGENOMEDOWNLOAD } from './modules/nf-core/ncbigenomedownload/main'
+include { WRITETOFILE } from './modules/local/writetofile/main'
 include { PYTAXONKIT_LCA } from './modules/local/pytaxonkit/lca/main'
 include { 
     SPADES;
@@ -76,13 +78,24 @@ workflow {
             .groupTuple()
             .map { meta, files -> tuple(meta, files[0]) }
         
-        NCBIDATASETS_DOWNLOAD(
-            lineages_filtered_ch, Channel.value(params.host_dna_type)
+        taxid_file = WRITETOFILE(lineages_filtered_ch)
+
+        NCBIGENOMEDOWNLOAD(
+            taxid_file.map { meta, _file -> meta },
+            [],
+            taxid_file.map { _meta, file -> file },
+            "all"
         )
-        fna = NCBIDATASETS_DOWNLOAD.out.fna
+        fna = NCBIGENOMEDOWNLOAD.out.fna.map { meta, file_list -> 
+            def genomic_fna = file_list.find { 
+                !it.toString().contains("cds") && 
+                !it.toString().contains("rna") }
+            [meta, genomic_fna]
+        }
+        .filter { _meta, file -> file != null }.view()
     
     } else {
-        host_fna = Channel.fromPath(params.host_fasta)
+        fna = Channel.fromPath(params.host_fasta)
         }
     
     database_ch = HISAT2_BUILD(fna, [[],[]], [[],[]])

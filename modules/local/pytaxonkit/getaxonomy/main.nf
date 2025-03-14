@@ -18,9 +18,9 @@ process PYTAXONKIT_GETAXONOMY {
     stub:
         """
         SPECIES="Indeterminated"
-        GENUS="Escherichia"
+        GENUS="561"
         FAMILY="Indeterminated"
-        ORDER="Enterobacterales"
+        ORDER="91347"
         echo -e "\$SPECIES\n\$GENUS\n\$FAMILY\n\$ORDER"
         """
 }
