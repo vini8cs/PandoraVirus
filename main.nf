@@ -86,15 +86,11 @@ workflow {
             taxid_file.map { _meta, file -> file },
             "all"
         )
-        fna = NCBIGENOMEDOWNLOAD.out.fna.map { meta, file_list -> 
-            def genomic_fna = file_list.find { 
-                !it.toString().contains("cds") && 
-                !it.toString().contains("rna") }
-            [meta, genomic_fna]
-        }
-        .filter { _meta, file -> file != null }.view()
-    
+        fna = NCBIGENOMEDOWNLOAD.out.fna
+            .transpose()
+            .filter { _meta, files -> !files.name.contains("rna") && !files.name.contains("cds")}
     } else {
+        //needs to add meta from each input
         fna = Channel.fromPath(params.host_fasta)
         }
     

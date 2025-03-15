@@ -1,14 +1,4 @@
 process {
-    withName: SRATOOLS_FASTERQDUMP {
-        cpus = 6
-    }
-    withName: FASTP {
-        cpus = 6
-    }
-    withName: PYTAXONKIT_GETAXONOMY {
-        cpus = 6
-    }
-    withName: NCBIDATASETS_DOWNLOAD {
-        cpus = 6
-    }
+    cpus = { Math.max(1, params.cpus_total.intdiv(params.samples.size())) }
+    memory = { "${Math.max(8, (params.memory_max / params.samples.size()).toInteger())} GB" }
 }
