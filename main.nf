@@ -24,6 +24,7 @@ include { DIAMOND_MAKEDB } from './modules/nf-core/diamond/makedb/main'
 include { NCBIGENOMEDOWNLOAD } from './modules/nf-core/ncbigenomedownload/main'
 include { WRITETOFILE } from './modules/local/writetofile/main'
 include { PYTAXONKIT_LCA } from './modules/local/pytaxonkit/lca/main'
+include { GUNZIP } from './modules/nf-core/gunzip/main'
 include { 
     SPADES;
     SPADES as RNA_SPADES ;
@@ -86,12 +87,17 @@ workflow {
             taxid_file.map { _meta, file -> file },
             "all"
         )
-        fna = NCBIGENOMEDOWNLOAD.out.fna
+        fna_gz = NCBIGENOMEDOWNLOAD.out.fna
             .transpose()
-            .filter { _meta, files -> !files.name.contains("rna") && !files.name.contains("cds")}
+            .filter { _meta, files -> !files.name.contains("rna") && !files.name.contains("cds")}.first()
+
+        GUNZIP(fna_gz)
+
+        fna = GUNZIP.out.gunzip
+
     } else {
-        //needs to add meta from each input
         fna = Channel.fromPath(params.host_fasta)
+            .map {file -> tuple([id: "host"], file)}
         }
     
     database_ch = HISAT2_BUILD(fna, [[],[]], [[],[]])
@@ -99,7 +105,10 @@ workflow {
     mapped_fastq = HISAT2_ALIGN.out.fastq
 
     if ("megahit" in params.assembly_tool) {
-        MEGAHIT(mapped_fastq.filter {meta, _file -> !meta.single_end})
+        MEGAHIT(
+            mapped_fastq.map { meta, file -> 
+            meta.single_end ? tuple(meta, file, []) : tuple(meta, file[0], file[1])
+        })
         contigs_megahit = MEGAHIT.out.contigs
     } else {
         contigs_megahit = Channel.empty()
