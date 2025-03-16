@@ -34,7 +34,7 @@ workflow {
     
     filtered_merged_fasta_ch = assembly_ch.fasta
     
-    GENOMAD_ENDTOEND(filtered_merged_fasta_ch.fastx, params.GENOMAD_DATABASE)
+    GENOMAD_ENDTOEND(filtered_merged_fasta_ch, params.GENOMAD_DATABASE)
 
     GENOMAD_ENDTOEND.out.virus_genes
     GENOMAD_ENDTOEND.out.virus_proteins

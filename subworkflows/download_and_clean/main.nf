@@ -27,5 +27,5 @@ workflow DOWNLOAD_AND_CLEAN {
             Channel.value(false)
         )
     emit:
-        filtered_fastq // [[id: String, single_end: Boolean], String/List]
+        filtered_fastq = filtered_fastq.reads
 }

@@ -50,7 +50,7 @@ workflow MAPPING {
             }
 
         database_ch = HISAT2_BUILD(fna, [[],[]], [[],[]])
-        HISAT2_ALIGN(filtered_fastq.reads, database_ch.index, [[],[]])
+        HISAT2_ALIGN(filtered_fastq, database_ch.index, [[],[]])
         mapped_fastq = HISAT2_ALIGN.out.fastq
 
     emit:

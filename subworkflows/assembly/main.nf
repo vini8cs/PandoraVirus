@@ -79,7 +79,7 @@ workflow ASSEMBLY {
             [[],[]], [[], []] )
 
     emit:
-        fasta = filtered_merged_fasta_ch
+        fasta = filtered_merged_fasta_ch.fastx
         assembly_report = QUAST.out.tsv
 
 }
