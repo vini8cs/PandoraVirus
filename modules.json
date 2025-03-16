@@ -10,6 +10,11 @@
             "git_sha": "81880787133db07d9b4c1febd152c090eb8325dc",
             "installed_by": ["modules"]
           },
+          "checkv/downloaddatabase": {
+            "branch": "master",
+            "git_sha": "81880787133db07d9b4c1febd152c090eb8325dc",
+            "installed_by": ["modules"]
+          },
           "diamond/blastx": {
             "branch": "master",
             "git_sha": "81880787133db07d9b4c1febd152c090eb8325dc",
@@ -60,7 +65,17 @@
             "git_sha": "81880787133db07d9b4c1febd152c090eb8325dc",
             "installed_by": ["modules"]
           },
+          "seqkit/rmdup": {
+            "branch": "master",
+            "git_sha": "81880787133db07d9b4c1febd152c090eb8325dc",
+            "installed_by": ["modules"]
+          },
           "seqtk/seq": {
+            "branch": "master",
+            "git_sha": "81880787133db07d9b4c1febd152c090eb8325dc",
+            "installed_by": ["modules"]
+          },
+          "seqtk/subseq": {
             "branch": "master",
             "git_sha": "81880787133db07d9b4c1febd152c090eb8325dc",
             "installed_by": ["modules"]

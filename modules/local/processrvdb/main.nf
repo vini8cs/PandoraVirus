@@ -1,5 +1,5 @@
 process PROCESSRVDB {
-    tag "processrvdb"
+    tag "$meta.id"
     label 'process_single'
     container 'docker.io/vini8cs/biopython:1.0'
 
