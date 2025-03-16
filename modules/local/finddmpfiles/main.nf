@@ -24,10 +24,12 @@ process FINDDMPFILES {
     """
     cp -rL ${dmp_dir}/* .
     sed -i 's/domain/superkingdom/g' nodes.dmp
+    sed -i 's/realm/no_rank/g' nodes.dmp
     """
     stub:
     """
     cp -rL ${dmp_dir}/* .
     sed -i 's/domain/superkingdom/g' nodes.dmp
+    sed -i 's/realm/no_rank/g' nodes.dmp
     """
 }
