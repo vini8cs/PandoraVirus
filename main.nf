@@ -1,7 +1,7 @@
 include { DOWNLOAD_AND_CLEAN } from './subworkflows/download_and_clean/main'
 include { MAPPING } from './subworkflows/mapping/main'
 include { ASSEMBLY } from './subworkflows/assembly/main'
-
+include {TAXONOMY } from './subworkflows/taxonomy/main'
 
 workflow {
     samples_ch = Channel
@@ -24,7 +24,7 @@ workflow {
     
     filtered_merged_fasta_ch = assembly_ch.fasta
     
-    
+    TAXONOMY(filtered_merged_fasta_ch)
     
 }
     

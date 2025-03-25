@@ -2,7 +2,7 @@ include { CAP3 } from '../../modules/local/cap3/main'
 include { DIAMOND_BLASTX } from '../../modules/nf-core/diamond/blastx/main' 
 include { XZ_DECOMPRESS } from '../../modules/nf-core/xz/decompress/main'
 include { PROCESSRVDB } from '../../modules/local/processrvdb/main'
-include { UNTAR } from '../../modules/nf-core/untar/main'
+include { UNZIP } from '../../modules/nf-core/unzip/main'
 include { DIAMOND_MAKEDB } from '../../modules/nf-core/diamond/makedb/main'
 include { FINDDMPFILES } from '../../modules/local/finddmpfiles/main'
 include { PYTAXONKIT_LCA } from '../../modules/local/pytaxonkit/lca/main'
@@ -43,11 +43,11 @@ workflow  TAXONOMY {
             decompressed_rvdb_ch = XZ_DECOMPRESS(rvdb_db_ch)
             processed_rvdb_ch = PROCESSRVDB(decompressed_rvdb_ch.file)
             
-            taxdump_file = file("https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz")
+            taxdump_file = file("https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump_archive/taxdmp_2024-11-01.zip")
             taxdump_ch = Channel.fromPath(taxdump_file).map {file -> tuple([id: "taxdump"], file)}
-            tar_ch = UNTAR(taxdump_ch)
+            taxdump_unzip = UNZIP(taxdump_ch)
 
-            nmp_files_ch = FINDDMPFILES(tar_ch.untar)
+            nmp_files_ch = FINDDMPFILES(taxdump_unzip.unzipped_archive)
 
             nodes_ch = nmp_files_ch.nodes
             names_ch = nmp_files_ch.names
