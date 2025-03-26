@@ -1,5 +1,8 @@
 tower_defaults.config
 .nextflow*
-perf.config
 params.config
 work/
+uv.lock
+.venv
+pyproject.toml
+.python-version

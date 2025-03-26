@@ -12,7 +12,10 @@ workflow MAPPING {
     take:
         samples_ch // [[id: String, host: String, single_end: Boolean], String]
         filtered_fastq
-    main: 
+    main:
+        samples_test_ch = samples_ch.filter {meta, _file -> meta.host == ""}.view()
+        
+
         if (!params.host_fasta) {
             lineage_info_ch = PYTAXONKIT_GETAXONOMY(samples_ch.map{
             meta, _file -> tuple(meta, meta.host)})

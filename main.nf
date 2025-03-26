@@ -9,7 +9,7 @@ workflow {
     .map {
         sample -> tuple([
             id: sample.sample_accession,
-            host: sample.sample_host, 
+            host: sample?.sample_host ?: "", 
             single_end: true //It's a workaround because SRATOOLS_FASTERQDUMP 
             //creates the file inside the folder, and pigz finds it. 
             //While an argument can change the output folder, a condition forces it back if it's a paired-end file.

@@ -24,7 +24,8 @@ workflow  TAXONOMY {
         if (GenomadDatabasefileExists.exists()) {
             genomad_database_ch = Channel.fromPath(params.GENOMAD_DATABASE)
         } else {
-            genomad_database_ch = GENOMAD_DOWNLOAD()
+            GENOMAD_DOWNLOAD()
+            genomad_database_ch = GENOMAD_DOWNLOAD.out.genomad_db
         }
 
         GENOMAD_ENDTOEND(filtered_merged_fasta_ch, genomad_database_ch)
@@ -79,11 +80,12 @@ workflow  TAXONOMY {
         if (CheckvDatabasefileExists.exists()) {
             checkv_database_ch = Channel.fromPath(params.CHECKV_DATABASE)
         } else {
-            checkv_database_ch = CHECKV_DOWNLOADDATABASE()
+            CHECKV_DOWNLOADDATABASE()
+            checkv_database_ch = CHECKV_DOWNLOADDATABASE.out.checkv_db
         }
-        checkv_output = CHECKV_ENDTOEND(non_duplicated_sequences_ch.sequences, checkv_database_ch)
+        checkv_output = CHECKV_ENDTOEND(non_duplicated_sequences_ch.fastx, checkv_database_ch)
     emit:
         quality_summary = checkv_output.quality_summary
-        rna_virus_sequences = non_duplicated_sequences_ch.sequences
+        rna_virus_sequences = non_duplicated_sequences_ch.fastx
         virus_table = rna_virus_tsv_ch.virus_table
 }

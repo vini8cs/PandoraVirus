@@ -1,4 +1,0 @@
-process {
-    cpus = { Math.max(1, params.cpus_total.intdiv(params.samples.size())) }
-    memory = { "${Math.max(8, (params.memory_max / params.samples.size()).toInteger())} GB" }
-}
