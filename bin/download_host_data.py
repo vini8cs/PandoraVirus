@@ -35,7 +35,7 @@ def handler(signum, frame):
     raise TimeoutError("Process timed out. Retrying...")
 
 
-def get_xml(sample, email):
+def get_xml(sample, email, timeout):
     tries = 0
     max_retries = 3
     Entrez.email = email
@@ -43,14 +43,14 @@ def get_xml(sample, email):
     while tries < max_retries:
         try:
             signal.signal(signal.SIGALRM, handler)
-            signal.alarm(TIMEOUT_LIMIT)
+            signal.alarm(timeout)
             logging.info(f"Extracting {sample} info...")
             time.sleep(0.3)
             with Entrez.efetch(db="sra", rettype="xml", retmode="text", id=sample) as handle:
                 root = ET.fromstring(handle.read())
                 for experiment in root.findall(".//SAMPLE_NAME"):
                     query = experiment.find("SCIENTIFIC_NAME").text.strip()
-                    return query if query else "Homo sapiens"
+                    return f"'{query}'" if query else "'Homo sapiens'"
 
         except TimeoutError as e:
             logging.warning(e)
@@ -65,12 +65,12 @@ def get_xml(sample, email):
             signal.alarm(0)
 
     logging.warning("Maximum retries reached. Using default value...")
-    return "Homo sapiens"
+    return "'Homo sapiens'"
 
 
 def main():
     options = get_options()
-    print(get_xml(options.sra_accession, options.email))
+    print(get_xml(options.sra_accession, options.email, options.timeout))
 
 
 if __name__ == "__main__":

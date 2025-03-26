@@ -7,14 +7,23 @@ include { HISAT2_ALIGN } from '../../modules/nf-core/hisat2/align/main'
 include { NCBIGENOMEDOWNLOAD } from '../../modules/nf-core/ncbigenomedownload/main'
 include { WRITETOFILE } from '../../modules/local/writetofile/main'
 include { GUNZIP } from '../../modules/nf-core/gunzip/main'
+include { DOWNLOADHOSTDATA } from '../../modules/local/downloadhostdata/main'
 
 workflow MAPPING {
     take:
         samples_ch // [[id: String, host: String, single_end: Boolean], String]
         filtered_fastq
     main:
-        samples_test_ch = samples_ch.filter {meta, _file -> meta.host == ""}.view()
-        
+        sample_without_host = samples_ch.filter {
+            meta, _file -> meta.host == ""
+        } 
+        host_ch = DOWNLOADHOSTDATA(sample_without_host.map {meta, _file -> tuple(meta, meta.id)}, params.EMAIL)
+
+        samples_ch = sample_without_host
+            .combine(host_ch, by: 0)
+            .map { meta, reads, host -> 
+                tuple([id: meta.id, single_end: meta.single_end, host: host], reads)
+            }
 
         if (!params.host_fasta) {
             lineage_info_ch = PYTAXONKIT_GETAXONOMY(samples_ch.map{

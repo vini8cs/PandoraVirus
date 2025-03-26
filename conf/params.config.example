@@ -3,6 +3,7 @@ params {
     GENOMAD_DATABASE = "/media/vini8cs/HD_vinicius1/benchmark/databases_netxflow/genomad"
     DIAMOND_DATABASE = "/media/vini8cs/HD_vinicius1/benchmark/databases_netxflow/diamond/RVDB.dmnd"
     CHECKV_DATABASE = "/media/vini8cs/HD_vinicius1/benchmark/databases_netxflow/checkv"
+    EMAIL = "anonymous@email.com"
     hisat2_build_memory = "4 GB"
     cpus_total = 8
     memory_max = 20
