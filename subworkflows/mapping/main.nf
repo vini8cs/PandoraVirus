@@ -22,7 +22,7 @@ workflow MAPPING {
         samples_ch = sample_without_host
             .combine(host_ch, by: 0)
             .map { meta, reads, host -> 
-                tuple([id: meta.id, single_end: meta.single_end, host: host], reads)
+                tuple([id: meta.id, single_end: meta.single_end, host: host.trim()], reads)
             }
 
         if (!params.host_fasta) {

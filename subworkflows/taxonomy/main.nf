@@ -70,10 +70,16 @@ workflow  TAXONOMY {
 
         taxonomic_dataframe = PYTAXONKIT_LCA(DIAMOND_BLASTX.out.txt)
 
-        ictv_database = file("https://ictv.global/vmr/current")
-        ictv_database_ch = Channel.fromPath(ictv_database).map {file -> tuple([id: "ictv_database"], file)}
-        rna_virus_tsv_ch = RNAVIRUS_FIND(ictv_database_ch, taxonomic_dataframe)
-        extracted_virus_sequeces_ch = SEQTK_SUBSEQ(aligned_virus_fasta.viral_transcripts, rna_virus_tsv_ch.virus_queries)
+        ictv_database = file("https://ictv.global/sites/default/files/VMR/VMR_MSL40.v1.20250307.xlsx")
+        ictv_database_ch = Channel.fromPath(ictv_database)
+        rna_virus_tsv_ch = RNAVIRUS_FIND(taxonomic_dataframe, ictv_database_ch)
+        // TODO: Corrigit SEQTK_SUBSEQ in nf-core (fazer um PR) adicionando os dois valores ao mesmo meta
+
+        queries_ch = rna_virus_tsv_ch.virus_queries
+            .combine(aligned_virus_fasta.viral_transcripts, by: 0)       
+       
+        extracted_virus_sequeces_ch = SEQTK_SUBSEQ(queries_ch.map{meta, _filter_list, fasta -> tuple(meta, fasta)}, queries_ch.map{_meta, filter_list, _fasta -> filter_list})
+        
         non_duplicated_sequences_ch = SEQKIT_RMDUP(extracted_virus_sequeces_ch.sequences)
 
         CheckvDatabasefileExists = file(params.CHECKV_DATABASE, checkIfExists: false)
