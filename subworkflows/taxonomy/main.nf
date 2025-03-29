@@ -2,9 +2,7 @@ include { CAP3 } from '../../modules/local/cap3/main'
 include { DIAMOND_BLASTX } from '../../modules/nf-core/diamond/blastx/main' 
 include { XZ_DECOMPRESS } from '../../modules/nf-core/xz/decompress/main'
 include { PROCESSRVDB } from '../../modules/local/processrvdb/main'
-include { UNZIP } from '../../modules/nf-core/unzip/main'
 include { DIAMOND_MAKEDB } from '../../modules/nf-core/diamond/makedb/main'
-include { FINDDMPFILES } from '../../modules/local/finddmpfiles/main'
 include { PYTAXONKIT_LCA } from '../../modules/local/pytaxonkit/lca/main'
 include { RNAVIRUS_FIND } from '../../modules/local/rnavirus_find/main'
 include { SEQTK_SUBSEQ } from '../../modules/nf-core/seqtk/subseq/main'
@@ -13,6 +11,12 @@ include { CHECKV_DOWNLOADDATABASE } from '../../modules/nf-core/checkv/downloadd
 include { CHECKV_ENDTOEND } from '../../modules/nf-core/checkv/endtoend/main'
 include { GENOMAD_ENDTOEND } from '../../modules/nf-core/genomad/endtoend/main'
 include { GENOMAD_DOWNLOAD } from '../../modules/nf-core/genomad/download/main'
+include { 
+    PROCESS_TAXDUMP;
+    PROCESS_TAXDUMP as PROCESS_TAXDUMP_TAXONKIT
+} from '../../subworkflows/process_taxdump/main'
+include { PYTAXONKIT_CREATEDATABASE  } from '../../modules/local/pytaxonkit/createdatabase/main'
+include { DownloadDatabase } from '../../modules/local/downloaddatabase/main'
 
 
 workflow  TAXONOMY {
@@ -39,28 +43,21 @@ workflow  TAXONOMY {
             diamond_db_ch = Channel.fromPath(params.DIAMOND_DATABASE).map {file ->
                 tuple([id: "db"], file)}
         } else {
-            rvdb_db = file(params.RVDB_LINK)
+            
+            rvdb_db = DownloadDatabase(params.RVDB_LINK)
             rvdb_db_ch = Channel.fromPath(rvdb_db).map {file -> tuple([id: "rvdb_db"], file)}
             decompressed_rvdb_ch = XZ_DECOMPRESS(rvdb_db_ch)
             processed_rvdb_ch = PROCESSRVDB(decompressed_rvdb_ch.file)
             
-            taxdump_file = file("https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump_archive/taxdmp_2024-11-01.zip")
-            taxdump_ch = Channel.fromPath(taxdump_file).map {file -> tuple([id: "taxdump"], file)}
-            taxdump_unzip = UNZIP(taxdump_ch)
-
-            nmp_files_ch = FINDDMPFILES(taxdump_unzip.unzipped_archive)
-
-            nodes_ch = nmp_files_ch.nodes
-            names_ch = nmp_files_ch.names
-
-            prot_accession2taxid_file = file("https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/prot.accession2taxid.gz")
+            taxdump_output = PROCESS_TAXDUMP()
+            prot_accession2taxid_file = DownloadDatabase("https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/prot.accession2taxid.gz")
             prot_accession2taxid_ch = Channel.fromPath(prot_accession2taxid_file)
 
             DIAMOND_MAKEDB(
                 processed_rvdb_ch,
                 prot_accession2taxid_ch,
-                nodes_ch.map{_meta, files -> files},
-                names_ch.map{_meta, files -> files}
+                taxdump_output.nodes_ch.map{_meta, files -> files},
+                taxdump_output.names_ch.map{_meta, files -> files}
             )
 
             diamond_db_ch = DIAMOND_MAKEDB.out.db
@@ -68,12 +65,20 @@ workflow  TAXONOMY {
 
         DIAMOND_BLASTX(aligned_virus_fasta.viral_transcripts, diamond_db_ch, "txt", "qseqid qlen sseqid slen stitle pident qcovhsp evalue bitscore")
 
+        TaxonkitDatabasefileExists = file(params.TAXONKIT_DATABASE, checkIfExists: false)
+        if (TaxonkitDatabasefileExists.exists()) {
+            taxonkit_db = Channel.fromPath(params.TAXONKIT_DATABASE)
+        } else {
+            taxdump_output = PROCESS_TAXDUMP_TAXONKIT()
+            taxonkit_db = PYTAXONKIT_CREATEDATABASE(taxdump_output.dmp_ch)
+        }
+        
         taxonomic_dataframe = PYTAXONKIT_LCA(DIAMOND_BLASTX.out.txt)
 
-        ictv_database = file("https://ictv.global/sites/default/files/VMR/VMR_MSL40.v1.20250307.xlsx")
+        ictv_database = DownloadDatabase("https://ictv.global/sites/default/files/VMR/VMR_MSL40.v1.20250307.xlsx")
         ictv_database_ch = Channel.fromPath(ictv_database)
         rna_virus_tsv_ch = RNAVIRUS_FIND(taxonomic_dataframe, ictv_database_ch)
-        // TODO: Corrigit SEQTK_SUBSEQ in nf-core (fazer um PR) adicionando os dois valores ao mesmo meta
+        // TODO: Corrigir SEQTK_SUBSEQ in nf-core (fazer um PR) adicionando os dois valores ao mesmo meta
 
         queries_ch = rna_virus_tsv_ch.virus_queries
             .combine(aligned_virus_fasta.viral_transcripts, by: 0)       
