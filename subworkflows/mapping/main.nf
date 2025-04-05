@@ -16,7 +16,11 @@ workflow MAPPING {
     main:
         sample_without_host = samples_ch.filter {
             meta, _file -> meta.host == ""
-        } 
+        }
+        sample_with_host = samples_ch.filter {
+            meta, _file -> meta.host != ""
+        }
+
         host_ch = DOWNLOADHOSTDATA(sample_without_host.map {meta, _file -> tuple(meta, meta.id)}, params.EMAIL)
 
         samples_ch = sample_without_host
@@ -24,9 +28,11 @@ workflow MAPPING {
             .map { meta, reads, host -> 
                 tuple([id: meta.id, single_end: meta.single_end, host: host.trim()], reads)
             }
+        all_samples_ch = samples_ch
+            .concat(sample_with_host)
 
         if (!params.host_fasta) {
-            lineage_info_ch = PYTAXONKIT_GETAXONOMY(samples_ch.map{
+            lineage_info_ch = PYTAXONKIT_GETAXONOMY(all_samples_ch.map{
             meta, _file -> tuple(meta, meta.host)})
 
             lineage = readFile(lineage_info_ch)
