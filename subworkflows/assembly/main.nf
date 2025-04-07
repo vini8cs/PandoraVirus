@@ -47,15 +47,16 @@ workflow ASSEMBLY {
         }
 
         if ("metaspades" in params.assembly_tool) {
-            META_SPADES(mapped_fastq.map{meta, file -> tuple(meta, file, [], [])}, [], [])
-            metaspades_contigs = SPADES.out.contigs
+            paired_fastq = mapped_fastq.filter { meta, _file -> meta.single_end == false }
+            META_SPADES(paired_fastq.map{meta, file -> tuple(meta, file, [], [])}, [], [])
+            metaspades_contigs = META_SPADES.out.contigs
         } else {
             metaspades_contigs = Channel.empty()
         }
 
         if ("coronaspades" in params.assembly_tool) {
             CORONA_SPADES(mapped_fastq.map{meta, file -> tuple(meta, file, [], [])}, [], [])
-            coronaspades_contigs = SPADES.out.contigs
+            coronaspades_contigs = CORONA_SPADES.out.contigs
         } else {
             coronaspades_contigs = Channel.empty()
         }
