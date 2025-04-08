@@ -5,6 +5,11 @@
     "https://github.com/nf-core/modules.git": {
       "modules": {
         "nf-core": {
+          "blast/updateblastdb": {
+            "branch": "master",
+            "git_sha": "061f2fb079b7fcbb5237c52ce6d74dcf34b6d964",
+            "installed_by": ["modules"]
+          },
           "cdhit/cdhitest": {
             "branch": "master",
             "git_sha": "81880787133db07d9b4c1febd152c090eb8325dc",
