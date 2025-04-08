@@ -20,19 +20,22 @@ process CAP3 {
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def cap3_unzipped = cap3.replaceAll(/\.gz$/, "")
     """
-    count=\$(grep -c ">" ${cap3})
+    gzip -d ${cap3}
+    count=\$(grep -c ">" ${cap3_unzipped})
     if [[ \$count -gt 1 ]]; then
-        cap3 ${cap3}
-        cat "${cap3}.cap.contigs" "${cap3}.cap.singlets" > ${prefix}_viral_transcripts_cap3.fasta
+        cap3 ${cap3_unzipped}
+        cat "${cap3_unzipped}.cap.contigs" "${cap3_unzipped}.cap.singlets" > ${prefix}_viral_transcripts_cap3.fasta
     else
-        mv ${cap3} ${prefix}_viral_transcripts_cap3.fasta
+        mv ${cap3_unzipped} ${prefix}_viral_transcripts_cap3.fasta
     fi
     """
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def cap3_unzipped = cap3.replaceAll(/\.gz$/, "")
     """
     touch ${prefix}_viral_transcripts_cap3.fasta
-    touch ${cap3}.{cap.contigs,cap.singlets,cap.ace,cap.contigs.links,cap.contigs.qual,cap.info}
+    touch ${cap3_unzipped}.{cap.contigs,cap.singlets,cap.ace,cap.contigs.links,cap.contigs.qual,cap.info}
     """
 }
