@@ -41,7 +41,7 @@ workflow  TAXONOMY {
         DiamondDatabasefileExists = file(params.DIAMOND_DATABASE, checkIfExists: false)
         if (DiamondDatabasefileExists.exists()) {
             diamond_db_ch = Channel.fromPath(params.DIAMOND_DATABASE).map {file ->
-                tuple([id: "db"], file)}
+                tuple([id: "db"], file)}.collect()
         } else {
             
             rvdb_db = DownloadDatabase(params.RVDB_LINK)
@@ -60,7 +60,7 @@ workflow  TAXONOMY {
                 taxdump_output.names_ch.map{_meta, files -> files}
             )
 
-            diamond_db_ch = DIAMOND_MAKEDB.out.db
+            diamond_db_ch = DIAMOND_MAKEDB.out.db.collect()
         }
 
         DIAMOND_BLASTX(aligned_virus_fasta.viral_transcripts, diamond_db_ch, "txt", "qseqid qlen sseqid slen stitle pident qcovhsp evalue bitscore")

@@ -1,11 +1,21 @@
-# docker build -t vini8cs/pytaxonkit:1.2 .
-FROM mambaorg/micromamba:ubuntu22.04
+# docker build -t vini8cs/pytaxonkit:1.3 .
+FROM mambaorg/micromamba:2-alpine3.20
 
 USER root
 
 ENV MAMBA_DOCKERFILE_ACTIVATE=1 \
-    DEBIAN_FRONTEND=noninteractive \
     MAMBA_ROOT_PREFIX=/opt/conda
+
+RUN apk update && apk add --no-cache \
+    build-base \
+    wget \
+    git \
+    zlib-dev \
+    bzip2-dev \
+    xz-dev \
+    file-dev \
+    libcurl \
+    util-linux
 
 RUN micromamba clean --all \
     && micromamba install -y -n base pip=25.0 \
