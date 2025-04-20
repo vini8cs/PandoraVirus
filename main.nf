@@ -24,7 +24,7 @@ workflow {
     assembly_ch = ASSEMBLY(mapped_fastq)
 
     if (params.BLASTN_DATABASE) {
-       METAGENOMICS(assembly_ch)
+       METAGENOMICS(assembly_ch.fasta)
     } 
     
     filtered_merged_fasta_ch = assembly_ch.fasta

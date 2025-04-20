@@ -7,12 +7,12 @@ process CAP3 {
     tuple val(meta), path(cap3)
 
     output:
-    tuple val(meta), path("*.cap.contigs"), emit: cap_contigs
-    tuple val(meta), path("*.cap.singlets"), emit: cap_singlets
-    tuple val(meta), path("*.cap.ace"), emit: cap_ace
-    tuple val(meta), path("*.cap.contigs.links"), emit: cap_links
-    tuple val(meta), path("*.cap.contigs.qual"), emit: cap_qual
-    tuple val(meta), path("*.cap.info"), emit: cap_info
+    tuple val(meta), path("*.cap.contigs"), emit: cap_contigs, optional: true
+    tuple val(meta), path("*.cap.singlets"), emit: cap_singlets, optional: true
+    tuple val(meta), path("*.cap.ace"), emit: cap_ace, optional: true
+    tuple val(meta), path("*.cap.contigs.links"), emit: cap_links, optional: true
+    tuple val(meta), path("*.cap.contigs.qual"), emit: cap_qual, optional: true
+    tuple val(meta), path("*.cap.info"), emit: cap_info, optional: true
     tuple val(meta), path("*_viral_transcripts_cap3.fasta"), emit: viral_transcripts
 
     when:
@@ -20,7 +20,7 @@ process CAP3 {
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def cap3_unzipped = cap3.replaceAll(/\.gz$/, "")
+    def cap3_unzipped = cap3.toString().replaceAll(/\.gz$/, "")
     """
     gzip -d ${cap3}
     count=\$(grep -c ">" ${cap3_unzipped})
@@ -33,7 +33,7 @@ process CAP3 {
     """
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def cap3_unzipped = cap3.replaceAll(/\.gz$/, "")
+    def cap3_unzipped = cap3.toString().replaceAll(/\.gz$/, "")
     """
     touch ${prefix}_viral_transcripts_cap3.fasta
     touch ${cap3_unzipped}.{cap.contigs,cap.singlets,cap.ace,cap.contigs.links,cap.contigs.qual,cap.info}

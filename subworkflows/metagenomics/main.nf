@@ -10,11 +10,14 @@ workflow METAGENOMICS {
                 tuple([id: "db"], file)
             }
         } else {
-            BLAST_UPDATEBLASTDB(params.BLASTN_DATABASE_NAME).map { file ->
+            blast_name = Channel.of(params.BLASTN_DATABASE_NAME).map { file ->
                 tuple([id: "db"], file)
             }
+            BLAST_UPDATEBLASTDB(blast_name)
             blast_db = BLAST_UPDATEBLASTDB.out.db
         }
+
+        
     emit:
         fasta
 }
