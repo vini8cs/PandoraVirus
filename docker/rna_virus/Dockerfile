@@ -1,25 +1,26 @@
 # docker build -t vini8cs/rna_virus:1.0 .
-FROM mambaorg/micromamba:2-alpine3.20
+FROM mambaorg/micromamba:ubuntu22.04
 
 USER root
 
 ENV MAMBA_DOCKERFILE_ACTIVATE=1 \
     MAMBA_ROOT_PREFIX=/opt/conda
 
-RUN apk update && apk add --no-cache \
-    build-base \
+    RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     wget \
     git \
-    zlib-dev \
-    bzip2-dev \
-    xz-dev \
-    file-dev \
-    libcurl \
-    util-linux
+    zlib1g-dev \
+    libbz2-dev \
+    liblzma-dev \
+    libmagic-dev \
+    libcurl4-openssl-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN micromamba clean --all \
     && micromamba install -y -n base pip=25.0 \
-    && pip install pandas==2.2.3 openpyxl==3.1.5  \
+    && pip install pandas==2.2.1 openpyxl==3.1.5  \
     && micromamba env export --name base > environment.lock \
     && echo ">> CONDA_LOCK_START" \
     && cat environment.lock \
