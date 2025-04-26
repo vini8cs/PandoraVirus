@@ -40,9 +40,9 @@ def get_options() -> argparse.Namespace:
 
 
 def create_taxon_list(data_base, column):
-    taxon = data_base.groupby(column)["Genome composition"].unique().apply(", ".join).reset_index()
+    taxon = data_base.groupby(column)["Genome"].unique().apply(", ".join).reset_index()
     taxon = taxon[
-        ~taxon["Genome composition"].str.contains(
+        ~taxon["Genome"].str.contains(
             "dsDNA|ssDNA\\(+\\)|ssDNA|dsDNA-RT|ssDNA\\(-\\)|ssDNA\\(\\+/-\\)",
             regex=True,
         )
@@ -54,11 +54,11 @@ def run_virus_filter(
     data_base: str,
     rna_virus: str,
     rna_virus_queries: str,
-    output_taxonkit: str,
+    input: str,
 ) -> None:
 
-    data_base_df = pd.read_excel(data_base)
-    diamond = pd.read_csv(output_taxonkit, sep="\t", header=0)
+    data_base_df = pd.read_excel(data_base, sheet_name="VMR MSL40")
+    diamond = pd.read_csv(input, sep="\t", header=0)
 
     virus_genus = create_taxon_list(data_base_df, "Genus")
     virus_phylum = create_taxon_list(data_base_df, "Phylum")
@@ -67,7 +67,7 @@ def run_virus_filter(
     virus_family = create_taxon_list(data_base_df, "Family")
 
     species = data_base_df[
-        data_base_df["Genome composition"].isin(["dsRNA", "ssRNA", "ssRNA(-)", "ssRNA-RT", "ssRNA(+)", "ssRNA(+/-)"])
+        data_base_df["Genome"].isin(["dsRNA", "ssRNA", "ssRNA(-)", "ssRNA-RT", "ssRNA(+)", "ssRNA(+/-)"])
     ]
     virus_species = species["Species"].tolist()
 
@@ -91,6 +91,21 @@ def run_virus_filter(
         & ~(diamond["genus"].isin(data_base_df["Genus"].to_list()))
     ].copy()
 
+    concat_df = pd.concat([rna_all_virus, non_classified], axis=0).rename(
+        columns={
+            "phylum": "Phylum",
+            "class": "Class",
+            "order": "Order",
+            "family": "Family",
+            "genus": "Genus",
+            "species": "Species",
+        }
+    )
+
+    merged_df = pd.merge(concat_df, data_base_df, how="left", on="Species")
+
+    merged_df.to_csv("test.csv", index=False)
+
     if not rna_all_virus.empty:
         rna_all_virus["virus_type"] = "RNA"
     if not non_classified.empty:
@@ -107,9 +122,7 @@ def run_virus_filter(
 
 def main() -> None:
     options = get_options()
-    run_virus_filter(
-        options.data_base, options.rna_virus_info, options.rna_virus_queries, options.takonkit_diamond_table
-    )
+    run_virus_filter(options.data_base, options.output_table, options.rna_virus_queries, options.input)
 
 
 if __name__ == "__main__":

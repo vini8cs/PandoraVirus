@@ -1,6 +1,6 @@
 process RNAVIRUS_FIND {
     tag "$meta.id"
-    container "quay.io/biocontainers/rnavirus_find:0.1.0--py_0"
+    container "docker.io/vini8cs/rna_virus:1.0"
     input:
     tuple val(meta), path(diamond_db)
     path(ictv_database)

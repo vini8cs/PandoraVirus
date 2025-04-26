@@ -63,17 +63,17 @@ workflow  TAXONOMY {
             diamond_db_ch = DIAMOND_MAKEDB.out.db.collect()
         }
 
-        DIAMOND_BLASTX(aligned_virus_fasta.viral_transcripts, diamond_db_ch, "txt", "qseqid qlen sseqid slen stitle pident qcovhsp evalue bitscore")
+        DIAMOND_BLASTX(aligned_virus_fasta.viral_transcripts, diamond_db_ch, "txt", "qseqid qlen sseqid slen stitle pident qcovhsp evalue bitscore staxids")
 
         TaxonkitDatabasefileExists = file(params.TAXONKIT_DATABASE, checkIfExists: false)
         if (TaxonkitDatabasefileExists.exists()) {
-            taxonkit_db = Channel.fromPath(params.TAXONKIT_DATABASE)
+            taxonkit_database_ch = Channel.fromPath(params.TAXONKIT_DATABASE).collect()
         } else {
             taxdump_output = PROCESS_TAXDUMP_TAXONKIT()
-            taxonkit_db = PYTAXONKIT_CREATEDATABASE(taxdump_output.dmp_ch)
+            taxonkit_database_ch = PYTAXONKIT_CREATEDATABASE(taxdump_output.dmp_ch).collect()
         }
-        
-        taxonomic_dataframe = PYTAXONKIT_LCA(DIAMOND_BLASTX.out.txt)
+
+        taxonomic_dataframe = PYTAXONKIT_LCA(DIAMOND_BLASTX.out.txt, taxonkit_database_ch)
 
         ictv_database = DownloadDatabase("https://ictv.global/sites/default/files/VMR/VMR_MSL40.v1.20250307.xlsx")
         ictv_database_ch = Channel.fromPath(ictv_database)

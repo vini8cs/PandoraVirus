@@ -37,6 +37,11 @@ RANK_COLS = [
 ]
 
 
+class NoTaxidsFoundError(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
 def get_options() -> argparse.Namespace:
     """
     Parse command line arguments and return the options.
@@ -94,6 +99,7 @@ def update_ranks(group: pd.DataFrame) -> pd.DataFrame:
 
 
 def lineage(taxids, threads):
+    print("taxids", taxids)
     result = pytaxonkit.lineage(
         taxids,
         threads=threads,
@@ -125,9 +131,15 @@ def lineage(taxids, threads):
 def create_taxonkit_dataframe(input_table: str, output: str, taxon: str, threads: int) -> None:
 
     input_table["taxid"] = input_table["taxid"].str.split(";").str[0]
+
     pandarallel.initialize(progress_bar=True, nb_workers=threads)
     result_df = input_table.groupby("qseqid").parallel_apply(lambda group: update_ranks(group)).reset_index(drop=True)
     taxids = result_df["taxid"].dropna().unique()
+
+    if len(taxids) == 0:
+        raise NoTaxidsFoundError(
+            "No taxids found in the input table. Check if the input table is empty or if the taxids are valid."
+        )
 
     lineage_df = lineage(taxids, threads)
     result_df["taxid"] = result_df["taxid"].astype(str)
@@ -151,7 +163,7 @@ def main() -> None:
     if df.empty:
         return None
 
-    create_taxonkit_dataframe(df, options.taxonkit_database, options.output_table, options.taxon, options.threads)
+    create_taxonkit_dataframe(df, options.output_table, options.taxon, options.threads)
 
 
 if __name__ == "__main__":

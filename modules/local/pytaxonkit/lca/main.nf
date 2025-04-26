@@ -5,13 +5,14 @@ process PYTAXONKIT_LCA {
 
     input:
     tuple val(meta), path(txt)
+    path(taxonkit_database)
 
     output:
     tuple val(meta), path("*.tsv")
     
     script:
     """
-    TAXONKIT_DATABASE=${params.TAXONKIT_DATABASE} create_taxonkit_dataframe.py -i ${txt} -tx virus --threads $task.cpus
+    TAXONKIT_DATABASE=${taxonkit_database} create_taxonkit_dataframe.py -i ${txt} -tx virus --threads $task.cpus
     """
     stub:
     """
