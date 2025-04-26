@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
 import argparse
+import warnings
 
 import pandas as pd
+
+warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
 
 def get_options() -> argparse.Namespace:
@@ -28,10 +31,18 @@ def get_options() -> argparse.Namespace:
         required=True,
     )
     parser.add_argument(
-        "-out", "--output_table", metavar="<path>", help="RNA virus output table path", default="rna_virus.tsv"
+        "-out",
+        "--output_table",
+        metavar="<path>",
+        help="RNA virus output table path",
+        default="rna_virus.tsv",
     )
     parser.add_argument(
-        "-q", "--rna_virus_queries", metavar="<path>", help="RNA virus queries path", default="rna_virus_queries.tsv"
+        "-q",
+        "--rna_virus_queries",
+        metavar="<path>",
+        help="RNA virus queries path",
+        default="rna_virus_queries.tsv",
     )
 
     options = parser.parse_args()
@@ -48,6 +59,14 @@ def create_taxon_list(data_base, column):
         )
     ]
     return taxon[column].tolist()
+
+
+def add_type_rna(row, rna_all_virus_species):
+    if pd.notna(row["Genome"]):
+        return row["Genome"]
+    if row["Species"] in rna_all_virus_species:
+        return "RNA"
+    return "unknown"
 
 
 def run_virus_filter(
@@ -102,27 +121,44 @@ def run_virus_filter(
         }
     )
 
-    merged_df = pd.merge(concat_df, data_base_df, how="left", on="Species")
+    data_base_df_filtered = data_base_df.drop(
+        columns=[
+            "Realm",
+            "Subrealm",
+            "Kingdom",
+            "Subkingdom",
+            "Phylum",
+            "Subphylum",
+            "Class",
+            "Subclass",
+            "Order",
+            "Suborder",
+            "Family",
+            "Subfamily",
+            "Genus",
+            "Subgenus",
+        ]
+    ).copy()
+    merged_df = concat_df.merge(data_base_df_filtered, how="left", on="Species")
+    rna_all_virus_species = rna_all_virus["species"].tolist()
 
-    merged_df.to_csv("test.csv", index=False)
+    merged_df["Genome"] = merged_df.apply(lambda row: add_type_rna(row, rna_all_virus_species), axis=1)
+    merged_df.to_csv("test.tsv", sep="\t", index=False)
+    merged_df = merged_df[merged_df["Family"] != "Retroviridae"]
 
-    if not rna_all_virus.empty:
-        rna_all_virus["virus_type"] = "RNA"
-    if not non_classified.empty:
-        non_classified["virus_type"] = "unknown"
+    merged_df.to_csv(rna_virus, sep="\t", index=False)
 
-    rna_all_virus = rna_all_virus[rna_all_virus["family"] != "Retroviridae"]
-
-    diamond = pd.concat([rna_all_virus, non_classified], axis=0)
-
-    diamond.to_csv(rna_virus, sep="\t", index=False)
-
-    diamond.iloc[:, 0].to_csv(rna_virus_queries, sep="\t", index=False, header=None)
+    merged_df.iloc[:, 0].to_csv(rna_virus_queries, sep="\t", index=False, header=None)
 
 
 def main() -> None:
     options = get_options()
-    run_virus_filter(options.data_base, options.output_table, options.rna_virus_queries, options.input)
+    run_virus_filter(
+        options.data_base,
+        options.output_table,
+        options.rna_virus_queries,
+        options.input,
+    )
 
 
 if __name__ == "__main__":
