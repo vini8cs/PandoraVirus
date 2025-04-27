@@ -11,17 +11,13 @@ include { CHECKV_DOWNLOADDATABASE } from '../../modules/nf-core/checkv/downloadd
 include { CHECKV_ENDTOEND } from '../../modules/nf-core/checkv/endtoend/main'
 include { GENOMAD_ENDTOEND } from '../../modules/nf-core/genomad/endtoend/main'
 include { GENOMAD_DOWNLOAD } from '../../modules/nf-core/genomad/download/main'
-include { 
-    PROCESS_TAXDUMP;
-    PROCESS_TAXDUMP as PROCESS_TAXDUMP_TAXONKIT
-} from '../../subworkflows/process_taxdump/main'
-include { PYTAXONKIT_CREATEDATABASE  } from '../../modules/local/pytaxonkit/createdatabase/main'
 include { DownloadDatabase } from '../../modules/local/downloaddatabase/main'
-
+include { PROCESS_TAXDUMP as PROCESS_TAXDUMP_DIAMOND } from '../../subworkflows/process_taxdump/main'
 
 workflow  TAXONOMY {
     take:
         filtered_merged_fasta_ch
+        taxonkit_database_ch
     main:
         
         GenomadDatabasefileExists = file(params.GENOMAD_DATABASE, checkIfExists: false)
@@ -49,7 +45,7 @@ workflow  TAXONOMY {
             decompressed_rvdb_ch = XZ_DECOMPRESS(rvdb_db_ch)
             processed_rvdb_ch = PROCESSRVDB(decompressed_rvdb_ch.file)
             
-            taxdump_output = PROCESS_TAXDUMP()
+            taxdump_output = PROCESS_TAXDUMP_DIAMOND()
             prot_accession2taxid_file = DownloadDatabase("https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/prot.accession2taxid.gz")
             prot_accession2taxid_ch = Channel.fromPath(prot_accession2taxid_file)
 
@@ -64,14 +60,6 @@ workflow  TAXONOMY {
         }
 
         DIAMOND_BLASTX(aligned_virus_fasta.viral_transcripts, diamond_db_ch, "txt", "qseqid qlen sseqid slen stitle pident qcovhsp evalue bitscore staxids")
-
-        TaxonkitDatabasefileExists = file(params.TAXONKIT_DATABASE, checkIfExists: false)
-        if (TaxonkitDatabasefileExists.exists()) {
-            taxonkit_database_ch = Channel.fromPath(params.TAXONKIT_DATABASE).collect()
-        } else {
-            taxdump_output = PROCESS_TAXDUMP_TAXONKIT()
-            taxonkit_database_ch = PYTAXONKIT_CREATEDATABASE(taxdump_output.dmp_ch).collect()
-        }
 
         taxonomic_dataframe = PYTAXONKIT_LCA(DIAMOND_BLASTX.out.txt, taxonkit_database_ch)
 
@@ -89,7 +77,9 @@ workflow  TAXONOMY {
 
         CheckvDatabasefileExists = file(params.CHECKV_DATABASE, checkIfExists: false)
         if (CheckvDatabasefileExists.exists()) {
-            checkv_database_ch = Channel.fromPath(params.CHECKV_DATABASE)
+            checkv_database_ch = Channel.fromPath("${params.CHECKV_DATABASE}/**/*")
+                .filter { file -> file.name == 'genome_db' }
+                .map { file -> file.parent }
         } else {
             CHECKV_DOWNLOADDATABASE()
             checkv_database_ch = CHECKV_DOWNLOADDATABASE.out.checkv_db
