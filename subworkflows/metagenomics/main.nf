@@ -1,4 +1,5 @@
 include { BLAST_UPDATEBLASTDB } from '../../modules/nf-core/blast/updateblastdb/main'
+include { BLAST_BLASTN } from '../../modules/nf-core/blast/blastn/main'
 
 workflow METAGENOMICS {
     take:
@@ -16,6 +17,8 @@ workflow METAGENOMICS {
             BLAST_UPDATEBLASTDB(blast_name)
             blast_db = BLAST_UPDATEBLASTDB.out.db
         }
+
+        report_output_ch = BLAST_BLASTN(fasta, blast_db)
 
         
     emit:
