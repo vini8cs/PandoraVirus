@@ -13,6 +13,8 @@ include { GENOMAD_ENDTOEND } from '../../modules/nf-core/genomad/endtoend/main'
 include { GENOMAD_DOWNLOAD } from '../../modules/nf-core/genomad/download/main'
 include { DownloadDatabase } from '../../modules/local/downloaddatabase/main'
 include { PROCESS_TAXDUMP as PROCESS_TAXDUMP_DIAMOND } from '../../subworkflows/process_taxdump/main'
+include { GUNZIP as GUNZIP_DESCOMPACT } from '../../modules/nf-core/gunzip/main'
+
 
 workflow  TAXONOMY {
     take:
@@ -61,10 +63,13 @@ workflow  TAXONOMY {
 
         DIAMOND_BLASTX(aligned_virus_fasta.viral_transcripts, diamond_db_ch, "txt", "qseqid qlen sseqid slen stitle pident qcovhsp evalue bitscore staxids")
 
-        taxonomic_dataframe = PYTAXONKIT_LCA(DIAMOND_BLASTX.out.txt, taxonkit_database_ch)
+        taxonomic_dataframe = PYTAXONKIT_LCA(
+            DIAMOND_BLASTX.out.txt, 
+            taxonkit_database_ch.map{_meta, files -> files}.collect()
+        )
 
         ictv_database = DownloadDatabase("https://ictv.global/sites/default/files/VMR/VMR_MSL40.v1.20250307.xlsx")
-        ictv_database_ch = Channel.fromPath(ictv_database)
+        ictv_database_ch = Channel.fromPath(ictv_database).collect()
         rna_virus_tsv_ch = RNAVIRUS_FIND(taxonomic_dataframe, ictv_database_ch)
         // TODO: Corrigir SEQTK_SUBSEQ in nf-core (fazer um PR) adicionando os dois valores ao mesmo meta
 
@@ -77,14 +82,17 @@ workflow  TAXONOMY {
 
         CheckvDatabasefileExists = file(params.CHECKV_DATABASE, checkIfExists: false)
         if (CheckvDatabasefileExists.exists()) {
-            checkv_database_ch = Channel.fromPath("${params.CHECKV_DATABASE}/**/*")
-                .filter { file -> file.name == 'genome_db' }
-                .map { file -> file.parent }
+        checkv_database_ch = Channel
+            .fromPath("${params.CHECKV_DATABASE}/*", type: 'dir')
+            .filter { file -> file.isDirectory() && file.name == 'genome_db' }
         } else {
             CHECKV_DOWNLOADDATABASE()
             checkv_database_ch = CHECKV_DOWNLOADDATABASE.out.checkv_db
         }
-        checkv_output = CHECKV_ENDTOEND(non_duplicated_sequences_ch.fastx, checkv_database_ch)
+
+        extracted_fasta_ch = GUNZIP_DESCOMPACT(non_duplicated_sequences_ch.fastx).gunzip
+        
+        checkv_output = CHECKV_ENDTOEND(extracted_fasta_ch, checkv_database_ch.collect())
     emit:
         quality_summary = checkv_output.quality_summary
         rna_virus_sequences = non_duplicated_sequences_ch.fastx

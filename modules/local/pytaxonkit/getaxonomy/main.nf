@@ -2,7 +2,7 @@ process PYTAXONKIT_GETAXONOMY {
     tag "$meta.id"
     debug params.debug
     
-    container "docker.io/vini8cs/pytaxonkit:1.2"
+    container "docker.io/vini8cs/pytaxonkit:1.3"
     containerOptions {
             "--volume ${params.TAXONKIT_DATABASE}:${params.TAXONKIT_DATABASE}"
     }

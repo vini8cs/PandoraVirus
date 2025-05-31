@@ -6,3 +6,4 @@ uv.lock
 .venv
 pyproject.toml
 .python-version
+params.json

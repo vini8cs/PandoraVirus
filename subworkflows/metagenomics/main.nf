@@ -23,8 +23,8 @@ workflow METAGENOMICS {
         report_output_ch = BLAST_BLASTN(fasta, blast_db)
 
         PYTAXONKIT_LCA_METAGENOMICS(
-            report_output_ch,
-            taxonkit_database_ch
+            report_output_ch.txt,
+            taxonkit_database_ch.map { _meta, files -> files }.collect()
         )
 
         
