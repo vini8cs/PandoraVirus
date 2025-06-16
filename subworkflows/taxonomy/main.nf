@@ -31,8 +31,6 @@ workflow  TAXONOMY {
         }
 
         GENOMAD_ENDTOEND(filtered_merged_fasta_ch, genomad_database_ch)
-        GENOMAD_ENDTOEND.out.virus_genes
-        GENOMAD_ENDTOEND.out.virus_proteins
 
         aligned_virus_fasta = CAP3(GENOMAD_ENDTOEND.out.virus_fasta)
 
