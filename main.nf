@@ -1,8 +1,7 @@
 include { DOWNLOAD_AND_CLEAN } from './subworkflows/download_and_clean/main'
 include { MAPPING } from './subworkflows/mapping/main'
 include { ASSEMBLY } from './subworkflows/assembly/main'
-include {TAXONOMY } from './subworkflows/taxonomy/main'
-include { METAGENOMICS } from './subworkflows/metagenomics/main'
+include { TAXONOMY } from './subworkflows/taxonomy/main'
 include { PROCESS_TAXDUMP } from './subworkflows/process_taxdump/main'
 include { PYTAXONKIT_CREATEDATABASE  } from './modules/local/pytaxonkit/createdatabase/main'
 
@@ -33,10 +32,6 @@ workflow {
     mapped_fastq = MAPPING(samples_ch, filtered_fastq)
 
     assembly_ch = ASSEMBLY(mapped_fastq)
-
-    if (params.BLASTN_DATABASE) {
-       METAGENOMICS(assembly_ch.fasta, taxonkit_database_ch)
-    } 
     
     filtered_merged_fasta_ch = assembly_ch.fasta
     
