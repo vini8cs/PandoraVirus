@@ -23,10 +23,10 @@ workflow  TAXONOMY {
     main:
         
         genomad_database_ch = DOWNLOAD_GENOMAD_DATABASE(params.GENOMAD_DATABASE)
-        genomad_contigs_ch = GENOMAD_ENDTOEND(filtered_merged_fasta_ch, genomad_database_ch).virus_fasta
+        genomad_contigs_ch = GENOMAD_ENDTOEND(filtered_merged_fasta_ch, genomad_database_ch.collect()).virus_fasta
 
         virsoter2_database_ch = DOWNLOAD_VIRSORTER2_DATABASE(params.VIRSORTER2_DATABASE)
-        virsorter2_database_ch = VIRSORTER2_RUN(filtered_merged_fasta_ch, virsoter2_database_ch, "all").virsorter_fasta
+        virsorter2_database_ch = VIRSORTER2_RUN(filtered_merged_fasta_ch, virsoter2_database_ch.collect(), "all").virsorter_fasta
 
         merged_virus_contigs = CAT_FASTA(
             genomad_contigs_ch
@@ -51,7 +51,6 @@ workflow  TAXONOMY {
         ictv_database_ch = Channel.fromPath(ictv_database).collect()
         
         rna_virus_tsv_ch = RNAVIRUS_FIND(taxonomic_dataframe, ictv_database_ch)
-        // TODO: Corrigir SEQTK_SUBSEQ in nf-core (fazer um PR) adicionando os dois valores ao mesmo meta
 
         queries_ch = rna_virus_tsv_ch.virus_queries
             .combine(aligned_virus_fasta.viral_transcripts, by: 0)       
@@ -59,14 +58,12 @@ workflow  TAXONOMY {
         extracted_virus_sequeces_ch = SEQTK_SUBSEQ(queries_ch)
         
         non_duplicated_sequences_ch = SEQKIT_RMDUP(extracted_virus_sequeces_ch.sequences)
+        extracted_fasta_ch = GUNZIP_DESCOMPACT(non_duplicated_sequences_ch.fastx).gunzip
 
         checkv_database_ch = DOWNLOAD_CHECKV_DATABASE(params.CHECKV_DATABASE)
-
-        extracted_fasta_ch = GUNZIP_DESCOMPACT(non_duplicated_sequences_ch.fastx).gunzip
-        
         checkv_output = CHECKV_ENDTOEND(extracted_fasta_ch, checkv_database_ch.collect())
     emit:
         quality_summary = checkv_output.quality_summary
-        rna_virus_sequences = non_duplicated_sequences_ch.fastx
+        rna_virus_sequences = extracted_fasta_ch
         virus_table = rna_virus_tsv_ch.virus_table
 }
