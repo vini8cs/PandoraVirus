@@ -15,8 +15,8 @@ process VIRSORTER2_DOWNLOADDATABASE {
     stub:
     prefix = task.ext.prefix ?: "virsorter_db"
     """
-    mkdir ${prefix}
+    mkdir -p ${prefix}
     touch ${prefix}/README.txt
-    touch ${prefix}/virsorter_db/virsorter_db.tar.gz
+    touch ${prefix}/virsorter_db.tar.gz
     """
 }
