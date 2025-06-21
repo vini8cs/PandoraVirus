@@ -37,10 +37,10 @@ process VIRSORTER2_RUN {
     stub:
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    touch ${prefix}.out
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        virsorter: \$(echo \$(virsorter --version) | sed 's/^.*Version: //; s/ .*\$//')
-    END_VERSIONS
+    mkdir -p ${prefix}.out
+    touch ${prefix}.out/final-viral-combined.fa
+    touch ${prefix}.out/final-viral-score.tsv
+    touch ${prefix}.out/final-viral-boundary.tsv
+    touch versions.yml
     """
 }

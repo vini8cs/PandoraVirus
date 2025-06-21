@@ -32,9 +32,9 @@ workflow  TAXONOMY {
             genomad_contigs_ch
                 .concat(virsorter2_database_ch)
                 .groupTuple()
-        )
+        ).contigs
         
-        clustered_virus_contigs = CDHIT_VIRUS(merged_virus_contigs)
+        clustered_virus_contigs = CDHIT_VIRUS(merged_virus_contigs).fasta
 
         aligned_virus_fasta = CAP3(clustered_virus_contigs)
 
