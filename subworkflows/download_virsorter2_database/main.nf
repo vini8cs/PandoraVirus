@@ -6,7 +6,7 @@ workflow DOWNLOAD_VIRSORTER2_DATABASE {
         virsorter2_database_path
     main:
         CheckvDatabasefileExists = file(virsorter2_database_path, checkIfExists: false)
-        if (CheckvDatabasefileExists.exists()) {
+        if (CheckvDatabasefileExists.exists() || !workflow.profile.contains('gcp')) {
         virsoter2_database_ch = virsorter2_database_path
         } else {
             VIRSORTER2_DOWNLOADDATABASE()

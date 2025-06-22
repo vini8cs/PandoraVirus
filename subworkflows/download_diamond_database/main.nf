@@ -11,7 +11,7 @@ workflow DOWNLOAD_DIAMOND_DATABASE {
         rvdb_link
     main:
         DiamondDatabasefileExists = file(diamond_database_path, checkIfExists: false)
-        if (DiamondDatabasefileExists.exists()) {
+        if (DiamondDatabasefileExists.exists() || !workflow.profile.contains('gcp')) {
             diamond_db_ch = Channel.fromPath(diamond_database_path).map {file ->
                 tuple([id: "db"], file)}.collect()
         } else {

@@ -7,7 +7,7 @@ workflow DOWNLOAD_CHECKV_DATABASE {
 
     main:
         CheckvDatabasefileExists = file(checkv_database_path, checkIfExists: false)
-        if (CheckvDatabasefileExists.exists()) {
+        if (CheckvDatabasefileExists.exists() || !workflow.profile.contains('gcp')) {
         checkv_database_ch = Channel
             .fromPath("${checkv_database_path}/*", type: 'dir')
             .filter { file -> file.isDirectory() && file.name == 'genome_db' }

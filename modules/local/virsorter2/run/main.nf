@@ -1,6 +1,7 @@
 process VIRSORTER2_RUN {
     label 'process_medium'
     container "docker.io/vini8cs/virsorter2:1.0"
+    tag "$meta.id"
 
     input:
     tuple val(meta), path(sequences)
@@ -20,6 +21,9 @@ process VIRSORTER2_RUN {
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
     """
+    export HOME=\$(pwd)
+    mkdir -p \$HOME/mambauser
+
     virsorter run \\
         -i ${sequences} \\
         -w ${prefix}.out \\

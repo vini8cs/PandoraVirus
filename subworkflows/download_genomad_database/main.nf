@@ -5,7 +5,7 @@ workflow DOWNLOAD_GENOMAD_DATABASE {
         genomad_database_path 
     main:
         GenomadDatabasefileExists = file(genomad_database_path, checkIfExists: false)
-        if (GenomadDatabasefileExists.exists()) {
+        if (GenomadDatabasefileExists.exists() || !workflow.profile.contains('gcp')) {
             genomad_database_ch = genomad_database_path
         } else {
             GENOMAD_DOWNLOAD()
