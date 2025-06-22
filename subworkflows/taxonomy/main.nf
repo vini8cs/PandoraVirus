@@ -7,7 +7,10 @@ include { SEQKIT_RMDUP } from '../../modules/nf-core/seqkit/rmdup/main'
 include { CHECKV_ENDTOEND } from '../../modules/nf-core/checkv/endtoend/main'
 include { GENOMAD_ENDTOEND } from '../../modules/nf-core/genomad/endtoend/main'
 include { DownloadDatabase } from '../../modules/local/downloaddatabase/main'
-include { GUNZIP as GUNZIP_DESCOMPACT } from '../../modules/nf-core/gunzip/main'
+include {
+    GUNZIP as GUNZIP_DESCOMPACT_VIRUS
+    GUNZIP as GUNZIP_DESCOMPACT 
+} from '../../modules/nf-core/gunzip/main'
 include { DOWNLOAD_GENOMAD_DATABASE } from '../../subworkflows/download_genomad_database/main'
 include { DOWNLOAD_DIAMOND_DATABASE } from '../../subworkflows/download_diamond_database/main'
 include { DOWNLOAD_CHECKV_DATABASE } from '../../subworkflows/download_checkv_database/main'
@@ -21,11 +24,14 @@ workflow  TAXONOMY {
         filtered_merged_fasta_ch
         taxonkit_database_ch
     main:
+        
+        unziped_fasta = GUNZIP_DESCOMPACT_VIRUS(filtered_merged_fasta_ch).gunzip
+        
         genomad_database_ch = DOWNLOAD_GENOMAD_DATABASE(params.GENOMAD_DATABASE)
-        genomad_contigs_ch = GENOMAD_ENDTOEND(filtered_merged_fasta_ch, genomad_database_ch.collect()).virus_fasta
+        genomad_contigs_ch = GENOMAD_ENDTOEND(unziped_fasta, genomad_database_ch.collect()).virus_fasta
 
         virsoter2_database_ch = DOWNLOAD_VIRSORTER2_DATABASE(params.VIRSORTER2_DATABASE)
-        virsorter2_database_ch = VIRSORTER2_RUN(filtered_merged_fasta_ch, virsoter2_database_ch.collect(), "all").virsorter_fasta
+        virsorter2_database_ch = VIRSORTER2_RUN(unziped_fasta, virsoter2_database_ch.collect(), "all").virsorter_fasta
 
         merged_virus_contigs = CAT_FASTA(
             genomad_contigs_ch
