@@ -1,6 +1,6 @@
 tower_defaults.config
 .nextflow*
-params.config
+params*.config
 work/
 uv.lock
 .venv
