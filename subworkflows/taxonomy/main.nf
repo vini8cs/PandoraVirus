@@ -21,7 +21,6 @@ workflow  TAXONOMY {
         filtered_merged_fasta_ch
         taxonkit_database_ch
     main:
-        
         genomad_database_ch = DOWNLOAD_GENOMAD_DATABASE(params.GENOMAD_DATABASE)
         genomad_contigs_ch = GENOMAD_ENDTOEND(filtered_merged_fasta_ch, genomad_database_ch.collect()).virus_fasta
 
@@ -44,7 +43,7 @@ workflow  TAXONOMY {
 
         taxonomic_dataframe = PYTAXONKIT_LCA(
             DIAMOND_BLASTX.out.txt, 
-            taxonkit_database_ch.map{_meta, files -> files}.collect()
+            taxonkit_database_ch
         )
 
         ictv_database = DownloadDatabase("https://ictv.global/sites/default/files/VMR/VMR_MSL40.v1.20250307.xlsx")

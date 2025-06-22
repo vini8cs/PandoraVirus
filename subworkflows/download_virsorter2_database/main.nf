@@ -7,8 +7,7 @@ workflow DOWNLOAD_VIRSORTER2_DATABASE {
     main:
         CheckvDatabasefileExists = file(virsorter2_database_path, checkIfExists: false)
         if (CheckvDatabasefileExists.exists()) {
-        virsoter2_database_ch = Channel
-            .fromPath(virsorter2_database_path)
+        virsoter2_database_ch = virsorter2_database_path
         } else {
             VIRSORTER2_DOWNLOADDATABASE()
             virsoter2_database_ch = VIRSORTER2_DOWNLOADDATABASE.out.virsorter_db

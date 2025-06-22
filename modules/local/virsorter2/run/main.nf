@@ -1,6 +1,6 @@
 process VIRSORTER2_RUN {
     label 'process_medium'
-    container "quay.io/biocontainers/virsorter:2.2.4--pyhdfd78af_2"
+    container "docker.io/vini8cs/virsorter2:1.0"
 
     input:
     tuple val(meta), path(sequences)
@@ -21,12 +21,11 @@ process VIRSORTER2_RUN {
     prefix = task.ext.prefix ?: "${meta.id}"
     """
     virsorter run \\
-        --keep-original-seq \\ 
         -i ${sequences} \\
         -w ${prefix}.out \\
         -j ${task.cpus} \\
         -d ${virsorter_db} \\
-        ${args}
+        ${args} \\
         ${analysis_type}
     
     cat <<-END_VERSIONS > versions.yml

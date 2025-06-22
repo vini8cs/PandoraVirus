@@ -1,6 +1,6 @@
 process VIRSORTER2_DOWNLOADDATABASE {
     label 'process_low'
-    container "quay.io/biocontainers/virsorter:2.2.4--pyhdfd78af_2"
+    container "docker.io/vini8cs/virsorter2:1.0"
 
     output:
     path "${prefix}/*", emit: virsorter_db
@@ -8,6 +8,9 @@ process VIRSORTER2_DOWNLOADDATABASE {
     script:
     prefix = task.ext.prefix ?: "virsorter_db"
     """
+    export HOME=\$(pwd)
+    mkdir -p \$HOME/.cache \$HOME/.config \$HOME/.virsorter
+    
     virsorter setup \\
         -d ${prefix} \\
         -j ${task.cpus}

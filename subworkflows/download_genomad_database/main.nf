@@ -6,7 +6,7 @@ workflow DOWNLOAD_GENOMAD_DATABASE {
     main:
         GenomadDatabasefileExists = file(genomad_database_path, checkIfExists: false)
         if (GenomadDatabasefileExists.exists()) {
-            genomad_database_ch = Channel.fromPath(genomad_database_path)
+            genomad_database_ch = genomad_database_path
         } else {
             GENOMAD_DOWNLOAD()
             genomad_database_ch = GENOMAD_DOWNLOAD.out.genomad_db

@@ -21,7 +21,7 @@ workflow {
 
     TaxonkitDatabasefileExists = file(params.TAXONKIT_DATABASE, checkIfExists: false)
     if (TaxonkitDatabasefileExists.exists()) {
-        taxonkit_database_ch = Channel.fromPath(params.TAXONKIT_DATABASE).collect()
+        taxonkit_database_ch = params.TAXONKIT_DATABASE
     } else {
         taxdump_output = PROCESS_TAXDUMP()
         taxonkit_database_ch = PYTAXONKIT_CREATEDATABASE(taxdump_output.dmp_ch).collect()
@@ -29,7 +29,7 @@ workflow {
 
     filtered_fastq = DOWNLOAD_AND_CLEAN(samples_ch)
 
-    mapped_fastq = MAPPING(samples_ch, filtered_fastq)
+    mapped_fastq = MAPPING(samples_ch, filtered_fastq, taxonkit_database_ch)
 
     assembly_ch = ASSEMBLY(mapped_fastq)
     
