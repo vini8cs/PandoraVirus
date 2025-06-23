@@ -2,6 +2,7 @@ process FASTP_CREATEADAPTERSFILE {
     tag "$meta.id"
     label 'process_low'
     debug params.debug
+    container 'quay.io/nf-core/ubuntu:20.04'
     
     input:
     tuple val(meta), path(fastq)

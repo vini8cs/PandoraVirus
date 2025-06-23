@@ -1,6 +1,8 @@
 process WRITETOFILE {
     tag "$meta.id"
     debug params.debug
+    container 'quay.io/nf-core/ubuntu:20.04'
+    label 'process_low'
     
     input:
     tuple val(meta), val(file)

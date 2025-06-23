@@ -2,7 +2,7 @@ params {
     TAXONKIT_DATABASE = "/media/vini8cs/HD_vinicius1/benchmark/databases_netxflow/.taxonkit"
     GENOMAD_DATABASE = "/media/vini8cs/HD_vinicius1/benchmark/databases_netxflow/genomad"
     DIAMOND_DATABASE = "/media/vini8cs/HD_vinicius1/benchmark/databases_netxflow/diamond/RVDB.dmnd"
-    CHECKV_DATABASE = "/media/vini8cs/HD_vinicius1/benchmark/databases_netxflow/checkv"
+    CHECKV_DATABASE = "pandora-virus-databases/checkv/checkv_db/checkv-db-v1.5/checkv-db-v1.5"
     VIRSORTER2_DATABASE = "/media/vini8cs/HD_vinicius1/benchmark/databases_netxflow/virsorter_db"
     EMAIL = "anonymous@email.com"
     hisat2_build_memory = "4 GB"
