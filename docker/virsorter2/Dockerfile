@@ -22,7 +22,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN micromamba clean --all \
     && micromamba install -c conda-forge -c bioconda -y -n base virsorter=2.2.4 \
     && micromamba install -y -n base pip=25.0 \
-    && pip install glob2  \
+    && pip install glob2==0.7  \
+    && pip install screed==1.1.3 \
     && micromamba env export --name base > environment.lock \
     && echo ">> CONDA_LOCK_START" \
     && cat environment.lock \

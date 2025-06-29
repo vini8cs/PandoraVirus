@@ -1,6 +1,6 @@
 process VIRSORTER2_RUN {
-    label 'process_medium'
-    container "docker.io/vini8cs/virsorter2:1.0"
+    label 'process_high'
+    container "quay.io/microbiome-informatics/virsorter:2.2.4_1"
     tag "$meta.id"
 
     input:
@@ -21,9 +21,6 @@ process VIRSORTER2_RUN {
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    export HOME=\$(pwd)
-    mkdir -p \$HOME/mambauser
-
     virsorter run \\
         -i ${sequences} \\
         -w ${prefix}.out \\
