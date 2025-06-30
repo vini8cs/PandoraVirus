@@ -13,6 +13,7 @@ workflow MAPPING {
     take:
         samples_ch // [[id: String, host: String, single_end: Boolean], String]
         filtered_fastq
+        taxonkit_database_ch
     main:
         sample_without_host = samples_ch.filter {
             meta, _file -> meta.host == ""
@@ -32,8 +33,10 @@ workflow MAPPING {
             .concat(sample_with_host)
 
         if (!params.host_fasta) {
-            lineage_info_ch = PYTAXONKIT_GETAXONOMY(all_samples_ch.map{
-            meta, _file -> tuple(meta, meta.host)})
+            lineage_info_ch = PYTAXONKIT_GETAXONOMY(
+                all_samples_ch.map{meta, _file -> tuple(meta, meta.host)},
+                taxonkit_database_ch
+            )
 
             lineage = readFile(lineage_info_ch)
 

@@ -8,8 +8,7 @@ process SEQTK_SUBSEQ {
         'biocontainers/seqtk:1.4--he4a0461_1' }"
 
     input:
-    tuple val(meta), path(sequences)
-    path filter_list
+    tuple val(meta), path(filter_list), path(sequences)
 
     output:
     tuple val(meta), path("*.gz"),  emit: sequences

@@ -21,8 +21,9 @@ process CAP3 {
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
     def cap3_unzipped = cap3.toString().replaceAll(/\.gz$/, "")
+    def gzipped = cap3.toString().endsWith(".gz") ? "gzip -d ${cap3}" : ""
     """
-    gzip -d ${cap3}
+    ${gzipped}
     count=\$(grep -c ">" ${cap3_unzipped})
     if [[ \$count -gt 1 ]]; then
         cap3 ${cap3_unzipped}

@@ -1,10 +1,8 @@
 params {
-    TAXONKIT_DATABASE = "gs://benchmark/databases_netxflow/.taxonkit"
-    GENOMAD_DATABASE = "gs://benchmark/databases_netxflow/genomad"
-    DIAMOND_DATABASE = "gs://benchmark/databases_netxflow/diamond/RVDB.dmnd"
-    CHECKV_DATABASE = "gs://benchmark/databases_netxflow/checkv"
-    BLASTN_DATABASE = "gs://benchmark/databases_netxflow/checkv"
-    BLASTN_DATABASE_NAME = "core_nt"
+    TAXONKIT_DATABASE = "gs://<bucket_name>/benchmark/databases_netxflow/.taxonkit"
+    GENOMAD_DATABASE = "gs://<bucket_name>/benchmark/databases_netxflow/genomad"
+    DIAMOND_DATABASE = "gs://<bucket_name>/benchmark/databases_netxflow/diamond/RVDB.dmnd"
+    CHECKV_DATABASE = "gs://<bucket_name>/benchmark/databases_netxflow/checkv"
     EMAIL = "anonymous@email.com"
     hisat2_build_memory = "4 GB"
     cpus_total = 8
@@ -12,4 +10,5 @@ params {
     PROJECT = "gcp_project"
     REGION = "gcp_region"
     spot = true
+    WORKDIR = "gs://<bucket_name>/workdir"
 }

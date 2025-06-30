@@ -6,7 +6,7 @@ process PYTAXONKIT_CREATEDATABASE {
     tuple val(meta), path(dmp, stageAs: ".taxonkit/*")
 
     output:
-    tuple val(meta), path(".taxonkit")
+    path(".taxonkit")
     
     script:
     """

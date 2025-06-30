@@ -3,17 +3,15 @@ process PYTAXONKIT_GETAXONOMY {
     debug params.debug
     
     container "docker.io/vini8cs/pytaxonkit:1.3"
-    containerOptions {
-            "--volume ${params.TAXONKIT_DATABASE}:${params.TAXONKIT_DATABASE}"
-    }
 
     input:
         tuple val(meta), val(taxon)
+        path(taxonkit_database)
     output:
         tuple val(meta), stdout
     script:
         """
-        TAXONKIT_DATABASE=$params.TAXONKIT_DATABASE extract_lineage.py -t ${taxon} 
+        TAXONKIT_DATABASE=${taxonkit_database} extract_lineage.py -t ${taxon} 
         """
     stub:
         """
