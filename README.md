@@ -1,32 +1,43 @@
-
 # PandoraVirus
 
 PandoraVirus is a Nextflow pipeline for detecting and identifying RNA viruses from public sequencing data. It automates the processing of metagenomic samples, enabling the identification, annotation, and reporting of viral sequences with minimal user intervention.
 
-Table of Contents
+<!-- vscode-markdown-toc -->
+* 1. [Installation](#Installation)
+	* 1.1. [Prerequisites](#Prerequisites)
+	* 1.2. [Install Docker](#InstallDocker)
+	* 1.3. [Remove Docker](#RemoveDocker)
+	* 1.4. [Setup Docker](#SetupDocker)
+* 2. [Usage](#Usage)
+* 3. [Pipeline Overview](#PipelineOverview)
+* 4. [Configuration](#Configuration)
+* 5. [Parameters](#Parameters)
+* 6. [Output](#Output)
+* 7. [Running on Google Cloud Platform (GCP)](#RunningonGoogleCloudPlatformGCP)
+	* 7.1. [Example command](#Examplecommand)
+	* 7.2. [Required changes in `params.config`](#Requiredchangesinparams.config)
+* 8. [Contributing](#Contributing)
+* 9. [License](#License)
 
-- [Installation](#installation)
-- [Usage](#usage)
-- [Pipeline Overview](#pipeline-overview)
-- [Configuration](#configuration)
-- [Parameters](#parameters)
-- [Output](#output)
-- [Contributing](#contributing)
-- [License](#license)
+<!-- vscode-markdown-toc-config
+	numbering=true
+	autoSave=true
+	/vscode-markdown-toc-config -->
+<!-- /vscode-markdown-toc -->
 
-## Installation
 
-### Prerequisites
-- [Nextflow](https://www.nextflow.io/)
-- [Docker](https://www.docker.com/) or [Singularity](https://sylabs.io/singularity/)
+##  1. <a name='Installation'></a>Installation
 
-### Install Docker
+###  1.1. <a name='Prerequisites'></a>Prerequisites
+- [Nextflow](https://www.nextflow.io/) (>=24.04.4)
+- [Docker](https://www.docker.com/)
+###  1.2. <a name='InstallDocker'></a>Install Docker
 
 ```bash
 curl -fsSL https://get.docker.com | sudo sh
 ```
 
-### Remove Docker
+###  1.3. <a name='RemoveDocker'></a>Remove Docker
 
 ```bash
 sudo apt-get purge docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-ce-rootless-extras
@@ -34,7 +45,7 @@ sudo rm -rf /var/lib/docker
 sudo rm -rf /var/lib/containerd
 ```
 
-### Setup Docker
+###  1.4. <a name='SetupDocker'></a>Setup Docker
 
 ```bash
 sudo groupadd docker
@@ -42,7 +53,7 @@ sudo usermod -aG docker $USER
 docker login
 ```
 
-## Usage
+##  2. <a name='Usage'></a>Usage
 
 To run the pipeline, use the following command:
 
@@ -80,7 +91,7 @@ where:
 		- `sample_accession`: SRA identifier for the sequencing data.
 		- `sample_host`: Host organism from which the sample was obtained.
 
-## Pipeline Overview
+##  3. <a name='PipelineOverview'></a>Pipeline Overview
 
 The pipeline consists of several modules and subworkflows to process metagenomic samples:
 
@@ -92,7 +103,7 @@ The pipeline consists of several modules and subworkflows to process metagenomic
 - **Viral Annotation**: Annotates viral contigs using external databases (e.g., RVDB, Genomad, DIAMOND, CheckV).
 - **Reporting**: Generates comprehensive analysis reports.
 
-## Configuration
+##  4. <a name='Configuration'></a>Configuration
 
 The pipeline can be configured using the `params.config` file. Key parameters include:
 
@@ -109,7 +120,7 @@ The pipeline can be configured using the `params.config` file. Key parameters in
 
 > **Note:** You do not need to specify paths to existing databases. Simply provide the directory where you want each database to be stored or the filename, and the pipeline will automatically download and set up the required databases for you.
 
-## Parameters
+##  5. <a name='Parameters'></a>Parameters
 
 Additional parameters for fine-tuning the pipeline:
 
@@ -123,7 +134,7 @@ Additional parameters for fine-tuning the pipeline:
 - `cd_hit_word_size`: Word size for CD-HIT clustering (`9`).
 - `cd_hit_identity`: Sequence identity threshold for CD-HIT clustering (`0.99`).
 
-## Output
+##  6. <a name='Output'></a>Output
 
 The pipeline generates various output files, including:
 
@@ -135,17 +146,17 @@ The pipeline generates various output files, including:
 - Viral annotation results
 - Comprehensive analysis reports
 
-## Running on Google Cloud Platform (GCP)
+##  7. <a name='RunningonGoogleCloudPlatformGCP'></a>Running on Google Cloud Platform (GCP)
 
 To run PandoraVirus on GCP, use the `gcp` profile, which configures the pipeline to use Google Batch and cloud storage. Before running, upload all required databases to your Google Cloud Storage (GCS) bucket, as the pipeline will not download them automatically in this mode.
 
-### Example command
+###  7.1. <a name='Examplecommand'></a>Example command
 
 ```bash
 nextflow run main.nf -profile gcp -params-file <path/to/json_file> [-bg]
 ```
 
-### Required changes in `params.config`
+###  7.2. <a name='Requiredchangesinparams.config'></a>Required changes in `params.config`
 
 Update the following parameters to point to your GCS buckets and GCP project:
 
@@ -165,10 +176,10 @@ Update the following parameters to point to your GCS buckets and GCP project:
 
 **Note:** Replace the example values with your actual GCP project, region, and bucket paths. Ensure all referenced databases are uploaded to GCS before running the pipeline.
 
-## Contributing
+##  8. <a name='Contributing'></a>Contributing
 
 Contributions are welcome! Please submit a pull request or open an issue to discuss any changes.
 
-## License
+##  9. <a name='License'></a>License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
